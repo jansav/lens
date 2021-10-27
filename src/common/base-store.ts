@@ -33,7 +33,7 @@ import { kebabCase } from "lodash";
 import { getPath } from "./utils/getPath";
 
 export interface BaseStoreParams<T> extends ConfOptions<T> {
-  syncOptions?: IReactionOptions;
+  syncOptions?: IReactionOptions<T, boolean>;
 }
 
 /**

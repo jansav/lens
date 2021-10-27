@@ -181,11 +181,15 @@ export class DockStore implements DockStorageState {
     if (this.height > this.maxHeight) this.height = this.maxHeight;
   }
 
-  onResize(callback: () => void, options?: IReactionOptions) {
+  onResize(callback: () => void, options?: Omit<IReactionOptions<void, boolean>, "equals">) {
+    (options as IReactionOptions<void, boolean>).equals = undefined;
+
     return reaction(() => [this.height, this.fullSize], callback, options);
   }
 
-  onTabChange(callback: (tabId: TabId) => void, options?: IReactionOptions) {
+  onTabChange(callback: (tabId: TabId) => void, options?: Omit<IReactionOptions<void, boolean>, "equals">) {
+    (options as IReactionOptions<void, boolean>).equals = undefined;
+
     return reaction(() => this.selectedTabId, callback, options);
   }
 

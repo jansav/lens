@@ -45,7 +45,7 @@ export class NamespaceStore extends KubeObjectStore<Namespace> {
     this.autoLoadAllowedNamespaces();
   }
 
-  public onContextChange(callback: (namespaces: string[]) => void, opts: IReactionOptions = {}): IReactionDisposer {
+  public onContextChange(callback: (namespaces: string[]) => void, opts: IReactionOptions<string[], boolean> = {}): IReactionDisposer {
     return reaction(() => Array.from(this.contextNamespaces), callback, {
       equals: comparer.shallow,
       ...opts,
