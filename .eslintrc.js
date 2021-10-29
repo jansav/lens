@@ -71,6 +71,10 @@ module.exports = {
           "avoidEscape": true,
           "allowTemplateLiterals": true,
         }],
+        "object-curly-spacing": ["error", "always", {
+          "objectsInObjects": false,
+          "arraysInObjects": true,
+        }],
         "linebreak-style": ["error", "unix"],
         "eol-last": ["error", "always"],
         "semi": ["error", "always"],
@@ -84,7 +88,7 @@ module.exports = {
           { "blankLine": "always", "prev": "*", "next": "function" },
           { "blankLine": "always", "prev": "*", "next": "class" },
           { "blankLine": "always", "prev": ["const", "let", "var"], "next": "*" },
-          { "blankLine": "any", "prev": ["const", "let", "var"], "next": ["const", "let", "var"]},
+          { "blankLine": "any", "prev": ["const", "let", "var"], "next": ["const", "let", "var"] },
         ]
       }
     },
@@ -130,6 +134,11 @@ module.exports = {
           "avoidEscape": true,
           "allowTemplateLiterals": true,
         }],
+        "object-curly-spacing": "off",
+        "@typescript-eslint/object-curly-spacing": ["error", "always", {
+          "objectsInObjects": false,
+          "arraysInObjects": true,
+        }],
         "react/prop-types": "off",
         "semi": "off",
         "@typescript-eslint/semi": ["error"],
@@ -145,7 +154,7 @@ module.exports = {
           { "blankLine": "always", "prev": "*", "next": "function" },
           { "blankLine": "always", "prev": "*", "next": "class" },
           { "blankLine": "always", "prev": ["const", "let", "var"], "next": "*" },
-          { "blankLine": "any", "prev": ["const", "let", "var"], "next": ["const", "let", "var"]},
+          { "blankLine": "any", "prev": ["const", "let", "var"], "next": ["const", "let", "var"] },
         ]
       },
     },
@@ -198,6 +207,11 @@ module.exports = {
           "avoidEscape": true,
           "allowTemplateLiterals": true,
         }],
+        "object-curly-spacing": "off",
+        "@typescript-eslint/object-curly-spacing": ["error", "always", {
+          "objectsInObjects": false,
+          "arraysInObjects": true,
+        }],
         "react/prop-types": "off",
         "semi": "off",
         "@typescript-eslint/semi": ["error"],
@@ -213,7 +227,7 @@ module.exports = {
           { "blankLine": "always", "prev": "*", "next": "function" },
           { "blankLine": "always", "prev": "*", "next": "class" },
           { "blankLine": "always", "prev": ["const", "let", "var"], "next": "*" },
-          { "blankLine": "any", "prev": ["const", "let", "var"], "next": ["const", "let", "var"]},
+          { "blankLine": "any", "prev": ["const", "let", "var"], "next": ["const", "let", "var"] },
         ],
         "react-hooks/rules-of-hooks": "error",
         "react-hooks/exhaustive-deps": "off"

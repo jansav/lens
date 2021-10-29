@@ -54,7 +54,7 @@ export const Editor = observer(() => {
       <section>
         <SubTitle title="Line numbers"/>
         <Select
-          options={Object.entries(EditorLineNumbersStyles).map(entry => ({label: entry[1], value: entry[0]}))}
+          options={Object.entries(EditorLineNumbersStyles).map(entry => ({ label: entry[1], value: entry[0] }))}
           value={UserStore.getInstance().editorConfiguration?.lineNumbers}
           onChange={({ value }: SelectOption) => UserStore.getInstance().setEditorLineNumbers(value)}
           themeName="lens"
