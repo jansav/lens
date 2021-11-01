@@ -88,7 +88,7 @@ export async function bootstrap(comp: () => Promise<AppComponent>, di: IDependen
   initializers.initCommandRegistry();
   initializers.initEntitySettingsRegistry();
   initializers.initKubeObjectMenuRegistry();
-  initializers.intiKubeObjectDetailRegistry();
+  initializers.initKubeObjectDetailRegistry();
   initializers.initWelcomeMenuRegistry();
   initializers.initWorkloadsOverviewDetailRegistry();
   initializers.initCatalogEntityDetailRegistry();
