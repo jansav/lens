@@ -41,6 +41,7 @@ export interface DialogProps {
   modal?: boolean;
   pinned?: boolean;
   animated?: boolean;
+  "data-testid"?: string;
 }
 
 interface DialogState {
@@ -149,12 +150,12 @@ export class Dialog extends React.PureComponent<DialogProps, DialogState> {
   };
 
   render() {
-    const { modal, animated, pinned } = this.props;
+    const { modal, animated, pinned, "data-testid": testId } = this.props;
     let { className } = this.props;
 
     className = cssNames("Dialog flex center", className, { modal, pinned });
     let dialog = (
-      <div className={className} onClick={stopPropagation}>
+      <div className={className} onClick={stopPropagation} data-testid={testId}>
         <div className="box" ref={e => this.contentElem = e}>
           {this.props.children}
         </div>
