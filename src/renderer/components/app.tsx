@@ -22,7 +22,6 @@ import React from "react";
 import { observable, makeObservable } from "mobx";
 import { disposeOnUnmount, observer } from "mobx-react";
 import { Redirect, Route, Router, Switch } from "react-router";
-import { DiContextProvider } from "@ogre-tools/injectable-react";
 import { history } from "../navigation";
 import { NotFound } from "./+404";
 import { UserManagement } from "./+user-management/user-management";
@@ -74,12 +73,10 @@ import { watchHistoryState } from "../remote-helpers/history-updater";
 import { unmountComponentAtNode } from "react-dom";
 import { PortForwardDialog } from "../port-forward";
 import { DeleteClusterDialog } from "./delete-cluster-dialog";
-import { getDi } from "./getDi";
 
 @observer
 export class App extends React.Component {
   static clusterId: ClusterId;
-  diContainer = getDi();
 
   constructor(props: {}) {
     super(props);
@@ -197,42 +194,40 @@ export class App extends React.Component {
 
   render() {
     return (
-      <DiContextProvider value={{ di: this.diContainer }}>
-        <Router history={history}>
-          <ErrorBoundary>
-            <MainLayout sidebar={<Sidebar/>} footer={<Dock/>}>
-              <Switch>
-                <Route component={ClusterOverview} {...routes.clusterRoute}/>
-                <Route component={Nodes} {...routes.nodesRoute}/>
-                <Route component={Workloads} {...routes.workloadsRoute}/>
-                <Route component={Config} {...routes.configRoute}/>
-                <Route component={Network} {...routes.networkRoute}/>
-                <Route component={Storage} {...routes.storageRoute}/>
-                <Route component={Namespaces} {...routes.namespacesRoute}/>
-                <Route component={Events} {...routes.eventRoute}/>
-                <Route component={CustomResources} {...routes.crdRoute}/>
-                <Route component={UserManagement} {...routes.usersManagementRoute}/>
-                <Route component={Apps} {...routes.appsRoute}/>
-                {this.renderExtensionTabLayoutRoutes()}
-                {this.renderExtensionRoutes()}
-                <Redirect exact from="/" to={this.startUrl}/>
-                <Route component={NotFound}/>
-              </Switch>
-            </MainLayout>
-            <Notifications/>
-            <ConfirmDialog/>
-            <KubeObjectDetails/>
-            <KubeConfigDialog/>
-            <DeploymentScaleDialog/>
-            <StatefulSetScaleDialog/>
-            <ReplicaSetScaleDialog/>
-            <CronJobTriggerDialog/>
-            <PortForwardDialog/>
-            <DeleteClusterDialog/>
-            <CommandContainer clusterId={App.clusterId}/>
-          </ErrorBoundary>
-        </Router>
-      </DiContextProvider>
+      <Router history={history}>
+        <ErrorBoundary>
+          <MainLayout sidebar={<Sidebar/>} footer={<Dock/>}>
+            <Switch>
+              <Route component={ClusterOverview} {...routes.clusterRoute}/>
+              <Route component={Nodes} {...routes.nodesRoute}/>
+              <Route component={Workloads} {...routes.workloadsRoute}/>
+              <Route component={Config} {...routes.configRoute}/>
+              <Route component={Network} {...routes.networkRoute}/>
+              <Route component={Storage} {...routes.storageRoute}/>
+              <Route component={Namespaces} {...routes.namespacesRoute}/>
+              <Route component={Events} {...routes.eventRoute}/>
+              <Route component={CustomResources} {...routes.crdRoute}/>
+              <Route component={UserManagement} {...routes.usersManagementRoute}/>
+              <Route component={Apps} {...routes.appsRoute}/>
+              {this.renderExtensionTabLayoutRoutes()}
+              {this.renderExtensionRoutes()}
+              <Redirect exact from="/" to={this.startUrl}/>
+              <Route component={NotFound}/>
+            </Switch>
+          </MainLayout>
+          <Notifications/>
+          <ConfirmDialog/>
+          <KubeObjectDetails/>
+          <KubeConfigDialog/>
+          <DeploymentScaleDialog/>
+          <StatefulSetScaleDialog/>
+          <ReplicaSetScaleDialog/>
+          <CronJobTriggerDialog/>
+          <PortForwardDialog/>
+          <DeleteClusterDialog/>
+          <CommandContainer clusterId={App.clusterId}/>
+        </ErrorBoundary>
+      </Router>
     );
   }
 }
