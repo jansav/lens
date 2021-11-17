@@ -22,7 +22,7 @@
 import "./dialog.scss";
 
 import React from "react";
-import { createPortal, findDOMNode } from "react-dom";
+import { createPortal } from "react-dom";
 import { disposeOnUnmount, observer } from "mobx-react";
 import { reaction } from "mobx";
 import { Animate } from "../animate";
@@ -51,6 +51,7 @@ interface DialogState {
 @observer
 export class Dialog extends React.PureComponent<DialogProps, DialogState> {
   private contentElem: HTMLElement;
+  ref = React.createRef<HTMLDivElement>();
 
   static defaultProps: DialogProps = {
     isOpen: false,
@@ -71,8 +72,7 @@ export class Dialog extends React.PureComponent<DialogProps, DialogState> {
   };
 
   get elem() {
-    // eslint-disable-next-line react/no-find-dom-node
-    return findDOMNode(this) as HTMLElement;
+    return this.ref.current as HTMLElement;
   }
 
   get isOpen() {
@@ -155,7 +155,12 @@ export class Dialog extends React.PureComponent<DialogProps, DialogState> {
 
     className = cssNames("Dialog flex center", className, { modal, pinned });
     let dialog = (
-      <div className={className} onClick={stopPropagation} data-testid={testId}>
+      <div
+        className={className}
+        onClick={stopPropagation}
+        data-testid={testId}
+        ref={this.ref}
+      >
         <div className="box" ref={e => this.contentElem = e}>
           {this.props.children}
         </div>
