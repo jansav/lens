@@ -27,6 +27,8 @@ import { Icon } from "../icon";
 import { productName, slackUrl } from "../../../common/vars";
 import { WelcomeMenuRegistry } from "../../../extensions/registries";
 import { WelcomeBannerRegistry } from "../../../extensions/registries";
+import TodoListInjectable from "../todo-list/todo-list.injectable";
+import { Inject } from "@ogre-tools/injectable-react";
 
 export const defaultWidth = 320;
 
@@ -48,7 +50,10 @@ export class Welcome extends React.Component {
 
     return (
       <div className="flex justify-center Welcome align-center">
-        <div style={{ width: `${maxWidth}px` }} data-testid="welcome-banner-container">
+        <Inject injectableKey={TodoListInjectable} />
+
+        <div style={{ width: `${maxWidth}px` }} data-testid="welcome-banner-container"
+        >
           {welcomeBanner.length > 0 ? (
             <Carousel
               stopAutoPlayOnHover={true}
