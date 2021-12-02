@@ -19,41 +19,40 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// Base class for extensions-api registries
-import { action, observable, makeObservable } from "mobx";
-import { LensExtension } from "../lens-extension";
+import { getLegacySingleton } from "../get-legacy-singleton/get-legacy-singleton";
+import clusterPageRegistryInjectable from "./cluster-page-registry.injectable";
+import globalPageRegistryInjectable from "./global-page-registry.injectable";
+import { getFunctionWithDependencies } from "../get-legacy-singleton/get-function-with-dependencies";
+import getExtensionPageUrlInjectable from "./get-extension-page-url.injectable";
 
-export class BaseRegistry<T, I = T> {
-  private items = observable.map<T, I>([], { deep: false });
+export type {
+  PageRegistration,
+  PageComponents,
+  PageTarget,
+  PageParams,
+  PageComponentProps,
+  RegisteredPage,
+} from "./page-registry";
 
-  constructor() {
-    makeObservable(this);
-  }
+export {
+  PageRegistry,
+} from "./page-registry";
 
-  getItems(): I[] {
-    return Array.from(this.items.values());
-  }
+export const getExtensionPageUrl = getFunctionWithDependencies(
+  getExtensionPageUrlInjectable,
+);
 
-  @action
-  add(items: T | T[], extension?: LensExtension) {
-    const itemArray = [items].flat() as T[];
+/**
+ * @deprecated Switch to using "di.inject(clusterPageRegistryInjectable)"
+ */
+export const ClusterPageRegistry = getLegacySingleton(
+  clusterPageRegistryInjectable,
+);
 
-    itemArray.forEach(item => {
-      this.items.set(item, this.getRegisteredItem(item, extension));
-    });
+/**
+ * @deprecated Switch to using "di.inject(globalPageRegistryInjectable)"
+ */
+export const GlobalPageRegistry = getLegacySingleton(
+  globalPageRegistryInjectable,
+);
 
-    return () => this.remove(...itemArray);
-  }
-
-  // eslint-disable-next-line unused-imports/no-unused-vars-ts
-  protected getRegisteredItem(item: T, extension?: LensExtension): I {
-    return item as any;
-  }
-
-  @action
-  remove(...items: T[]) {
-    items.forEach(item => {
-      this.items.delete(item);
-    });
-  }
-}

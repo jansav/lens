@@ -19,41 +19,31 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// Base class for extensions-api registries
-import { action, observable, makeObservable } from "mobx";
-import { LensExtension } from "../lens-extension";
+// Extensions API -> Status bar customizations
 
-export class BaseRegistry<T, I = T> {
-  private items = observable.map<T, I>([], { deep: false });
+import type React from "react";
+import { BaseRegistry } from "../base-registry";
 
-  constructor() {
-    makeObservable(this);
-  }
+interface StatusBarComponents {
+  Item?: React.ComponentType;
+  /**
+   * The side of the bottom bar to place this component.
+   *
+   * @default "right"
+   */
+  position?: "left" | "right";
+}
 
-  getItems(): I[] {
-    return Array.from(this.items.values());
-  }
+interface StatusBarRegistrationV2 {
+  components?: StatusBarComponents; // has to be optional for backwards compatability
+}
 
-  @action
-  add(items: T | T[], extension?: LensExtension) {
-    const itemArray = [items].flat() as T[];
+export interface StatusBarRegistration extends StatusBarRegistrationV2 {
+  /**
+   * @deprecated use components.Item instead
+   */
+  item?: React.ReactNode;
+}
 
-    itemArray.forEach(item => {
-      this.items.set(item, this.getRegisteredItem(item, extension));
-    });
-
-    return () => this.remove(...itemArray);
-  }
-
-  // eslint-disable-next-line unused-imports/no-unused-vars-ts
-  protected getRegisteredItem(item: T, extension?: LensExtension): I {
-    return item as any;
-  }
-
-  @action
-  remove(...items: T[]) {
-    items.forEach(item => {
-      this.items.delete(item);
-    });
-  }
+export class StatusBarRegistry extends BaseRegistry<StatusBarRegistration> {
 }

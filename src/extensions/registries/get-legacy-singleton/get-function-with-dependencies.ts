@@ -18,42 +18,38 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+import type { Injectable } from "@ogre-tools/injectable";
 
-// Base class for extensions-api registries
-import { action, observable, makeObservable } from "mobx";
-import { LensExtension } from "../lens-extension";
+import { getDiKludge } from "./di-kludge";
 
-export class BaseRegistry<T, I = T> {
-  private items = observable.map<T, I>([], { deep: false });
+type Awaited<TMaybePromise> = TMaybePromise extends PromiseLike<infer TValue>
+  ? TValue
+  : TMaybePromise;
 
-  constructor() {
-    makeObservable(this);
-  }
+type FunctionType<TParameters extends unknown[], TReturnValue> = (
+  ...args: TParameters
+) => TReturnValue;
 
-  getItems(): I[] {
-    return Array.from(this.items.values());
-  }
+type FactoryType = <
+  TInjectable extends Injectable<TInstance, TDependencies> & {
+    instantiate: (
+      dependencies: TDependencies,
+    ) =>
+      | ((...args: TParameters) => TReturnValue)
+      | Promise<(...args: TParameters) => TReturnValue>;
+  },
+  TInstance,
+  TDependencies extends object = {},
+  TFunction extends (...args: unknown[]) => unknown = Awaited<
+    ReturnType<TInjectable["instantiate"]>
+  >,
+  TParameters extends unknown[] = Parameters<TFunction>,
+  TReturnValue = ReturnType<TFunction>,
+>(
+  injectableKey: TInjectable,
+) => FunctionType<TParameters, TReturnValue>;
 
-  @action
-  add(items: T | T[], extension?: LensExtension) {
-    const itemArray = [items].flat() as T[];
-
-    itemArray.forEach(item => {
-      this.items.set(item, this.getRegisteredItem(item, extension));
-    });
-
-    return () => this.remove(...itemArray);
-  }
-
-  // eslint-disable-next-line unused-imports/no-unused-vars-ts
-  protected getRegisteredItem(item: T, extension?: LensExtension): I {
-    return item as any;
-  }
-
-  @action
-  remove(...items: T[]) {
-    items.forEach(item => {
-      this.items.delete(item);
-    });
-  }
-}
+export const getFunctionWithDependencies: FactoryType =
+  injectableKey =>
+    (...args) =>
+      getDiKludge().inject(injectableKey)(...args);

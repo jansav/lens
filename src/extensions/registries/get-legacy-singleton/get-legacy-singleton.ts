@@ -18,42 +18,45 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+import type { Injectable } from "@ogre-tools/injectable";
+import { getDiKludge } from "./di-kludge";
 
-// Base class for extensions-api registries
-import { action, observable, makeObservable } from "mobx";
-import { LensExtension } from "../lens-extension";
+type Awaited<TMaybePromise> = TMaybePromise extends PromiseLike<infer TValue>
+  ? TValue
+  : TMaybePromise;
 
-export class BaseRegistry<T, I = T> {
-  private items = observable.map<T, I>([], { deep: false });
+export const getLegacySingleton = <
+  TInjectable extends Injectable<
+    TInstance,
+    TDependencies,
+    TInstantiationParameter
+  >,
+  TInstance,
+  TDependencies extends object,
+  TInstantiationParameter,
+  TMaybePromiseInstance = ReturnType<TInjectable["instantiate"]>,
+>(
+    injectableKey: TInjectable,
+  ) => ({
+    createInstance: (): TMaybePromiseInstance extends PromiseLike<any>
+    ? Awaited<TMaybePromiseInstance>
+    : TMaybePromiseInstance => {
+      const di = getDiKludge();
 
-  constructor() {
-    makeObservable(this);
-  }
+      return di.inject(injectableKey);
+    },
 
-  getItems(): I[] {
-    return Array.from(this.items.values());
-  }
+    getInstance: (): TMaybePromiseInstance extends PromiseLike<any>
+    ? Awaited<TMaybePromiseInstance>
+    : TMaybePromiseInstance => {
+      const di = getDiKludge();
 
-  @action
-  add(items: T | T[], extension?: LensExtension) {
-    const itemArray = [items].flat() as T[];
+      return di.inject(injectableKey);
+    },
 
-    itemArray.forEach(item => {
-      this.items.set(item, this.getRegisteredItem(item, extension));
-    });
+    resetInstance: () => {
+      const di = getDiKludge();
 
-    return () => this.remove(...itemArray);
-  }
-
-  // eslint-disable-next-line unused-imports/no-unused-vars-ts
-  protected getRegisteredItem(item: T, extension?: LensExtension): I {
-    return item as any;
-  }
-
-  @action
-  remove(...items: T[]) {
-    items.forEach(item => {
-      this.items.delete(item);
-    });
-  }
-}
+      return di.purge(injectableKey);
+    },
+  });

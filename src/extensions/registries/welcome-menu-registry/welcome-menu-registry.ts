@@ -19,41 +19,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// Base class for extensions-api registries
-import { action, observable, makeObservable } from "mobx";
-import { LensExtension } from "../lens-extension";
+import { BaseRegistry } from "../base-registry";
 
-export class BaseRegistry<T, I = T> {
-  private items = observable.map<T, I>([], { deep: false });
-
-  constructor() {
-    makeObservable(this);
-  }
-
-  getItems(): I[] {
-    return Array.from(this.items.values());
-  }
-
-  @action
-  add(items: T | T[], extension?: LensExtension) {
-    const itemArray = [items].flat() as T[];
-
-    itemArray.forEach(item => {
-      this.items.set(item, this.getRegisteredItem(item, extension));
-    });
-
-    return () => this.remove(...itemArray);
-  }
-
-  // eslint-disable-next-line unused-imports/no-unused-vars-ts
-  protected getRegisteredItem(item: T, extension?: LensExtension): I {
-    return item as any;
-  }
-
-  @action
-  remove(...items: T[]) {
-    items.forEach(item => {
-      this.items.delete(item);
-    });
-  }
+export interface WelcomeMenuRegistration {
+  title: string | (() => string);
+  icon: string;
+  click: () => void | Promise<void>;
 }
+
+export class WelcomeMenuRegistry extends BaseRegistry<WelcomeMenuRegistration> {}

@@ -18,42 +18,26 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+import type { Injectable } from "@ogre-tools/injectable";
+import { lifecycleEnum } from "@ogre-tools/injectable";
 
-// Base class for extensions-api registries
-import { action, observable, makeObservable } from "mobx";
-import { LensExtension } from "../lens-extension";
+import {
+  getExtensionPageUrlDependencies,
+  getExtensionPageUrl,
+} from "./page-registry";
 
-export class BaseRegistry<T, I = T> {
-  private items = observable.map<T, I>([], { deep: false });
+import globalPageRegistryInjectable from "./global-page-registry.injectable";
+import clusterPageRegistryInjectable from "./cluster-page-registry.injectable";
 
-  constructor() {
-    makeObservable(this);
-  }
 
-  getItems(): I[] {
-    return Array.from(this.items.values());
-  }
+const getExtensionPageUrlInjectable: Injectable<ReturnType<typeof getExtensionPageUrl>, getExtensionPageUrlDependencies> = {
+  getDependencies: (di) => ({
+    globalPageRegistry: di.inject(globalPageRegistryInjectable),
+    clusterPageRegistry: di.inject(clusterPageRegistryInjectable),
+  }),
 
-  @action
-  add(items: T | T[], extension?: LensExtension) {
-    const itemArray = [items].flat() as T[];
+  instantiate: getExtensionPageUrl,
+  lifecycle: lifecycleEnum.singleton,
+};
 
-    itemArray.forEach(item => {
-      this.items.set(item, this.getRegisteredItem(item, extension));
-    });
-
-    return () => this.remove(...itemArray);
-  }
-
-  // eslint-disable-next-line unused-imports/no-unused-vars-ts
-  protected getRegisteredItem(item: T, extension?: LensExtension): I {
-    return item as any;
-  }
-
-  @action
-  remove(...items: T[]) {
-    items.forEach(item => {
-      this.items.delete(item);
-    });
-  }
-}
+export default getExtensionPageUrlInjectable;

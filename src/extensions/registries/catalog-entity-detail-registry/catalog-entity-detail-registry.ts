@@ -19,41 +19,31 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// Base class for extensions-api registries
-import { action, observable, makeObservable } from "mobx";
-import { LensExtension } from "../lens-extension";
+import type React from "react";
+import type { CatalogEntity } from "../../common-api/catalog";
+import { BaseRegistry } from "../base-registry";
 
-export class BaseRegistry<T, I = T> {
-  private items = observable.map<T, I>([], { deep: false });
+export interface CatalogEntityDetailsProps<T extends CatalogEntity> {
+  entity: T;
+}
 
-  constructor() {
-    makeObservable(this);
-  }
+export interface CatalogEntityDetailComponents<T extends CatalogEntity> {
+  Details: React.ComponentType<CatalogEntityDetailsProps<T>>;
+}
 
-  getItems(): I[] {
-    return Array.from(this.items.values());
-  }
+export interface CatalogEntityDetailRegistration<T extends CatalogEntity> {
+  kind: string;
+  apiVersions: string[];
+  components: CatalogEntityDetailComponents<T>;
+  priority?: number;
+}
 
-  @action
-  add(items: T | T[], extension?: LensExtension) {
-    const itemArray = [items].flat() as T[];
-
-    itemArray.forEach(item => {
-      this.items.set(item, this.getRegisteredItem(item, extension));
+export class CatalogEntityDetailRegistry extends BaseRegistry<CatalogEntityDetailRegistration<CatalogEntity>> {
+  getItemsForKind(kind: string, apiVersion: string) {
+    const items = this.getItems().filter((item) => {
+      return item.kind === kind && item.apiVersions.includes(apiVersion);
     });
 
-    return () => this.remove(...itemArray);
-  }
-
-  // eslint-disable-next-line unused-imports/no-unused-vars-ts
-  protected getRegisteredItem(item: T, extension?: LensExtension): I {
-    return item as any;
-  }
-
-  @action
-  remove(...items: T[]) {
-    items.forEach(item => {
-      this.items.delete(item);
-    });
+    return items.sort((a, b) => (b.priority ?? 50) - (a.priority ?? 50));
   }
 }

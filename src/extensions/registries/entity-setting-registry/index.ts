@@ -18,42 +18,19 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+import { getLegacySingleton } from "../get-legacy-singleton/get-legacy-singleton";
+import entitySettingRegistryInjectable from "./entity-setting-registry.injectable";
 
-// Base class for extensions-api registries
-import { action, observable, makeObservable } from "mobx";
-import { LensExtension } from "../lens-extension";
+export type {
+  EntitySettingViewProps,
+  EntitySettingComponents,
+  EntitySettingRegistration,
+  RegisteredEntitySetting,
+} from "./entity-setting-registry";
 
-export class BaseRegistry<T, I = T> {
-  private items = observable.map<T, I>([], { deep: false });
-
-  constructor() {
-    makeObservable(this);
-  }
-
-  getItems(): I[] {
-    return Array.from(this.items.values());
-  }
-
-  @action
-  add(items: T | T[], extension?: LensExtension) {
-    const itemArray = [items].flat() as T[];
-
-    itemArray.forEach(item => {
-      this.items.set(item, this.getRegisteredItem(item, extension));
-    });
-
-    return () => this.remove(...itemArray);
-  }
-
-  // eslint-disable-next-line unused-imports/no-unused-vars-ts
-  protected getRegisteredItem(item: T, extension?: LensExtension): I {
-    return item as any;
-  }
-
-  @action
-  remove(...items: T[]) {
-    items.forEach(item => {
-      this.items.delete(item);
-    });
-  }
-}
+/**
+ * @deprecated Switch to using "di.inject(entitySettingRegistryInjectable)"
+ */
+export const EntitySettingRegistry = getLegacySingleton(
+  entitySettingRegistryInjectable,
+);

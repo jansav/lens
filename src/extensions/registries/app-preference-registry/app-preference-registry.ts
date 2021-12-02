@@ -19,41 +19,30 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// Base class for extensions-api registries
-import { action, observable, makeObservable } from "mobx";
-import { LensExtension } from "../lens-extension";
+import type React from "react";
+import { BaseRegistry } from "../base-registry";
 
-export class BaseRegistry<T, I = T> {
-  private items = observable.map<T, I>([], { deep: false });
+export interface AppPreferenceComponents {
+  Hint: React.ComponentType<any>;
+  Input: React.ComponentType<any>;
+}
 
-  constructor() {
-    makeObservable(this);
-  }
+export interface AppPreferenceRegistration {
+  title: string;
+  id?: string;
+  showInPreferencesTab?: string;
+  components: AppPreferenceComponents;
+}
 
-  getItems(): I[] {
-    return Array.from(this.items.values());
-  }
+export interface RegisteredAppPreference extends AppPreferenceRegistration {
+  id: string;
+}
 
-  @action
-  add(items: T | T[], extension?: LensExtension) {
-    const itemArray = [items].flat() as T[];
-
-    itemArray.forEach(item => {
-      this.items.set(item, this.getRegisteredItem(item, extension));
-    });
-
-    return () => this.remove(...itemArray);
-  }
-
-  // eslint-disable-next-line unused-imports/no-unused-vars-ts
-  protected getRegisteredItem(item: T, extension?: LensExtension): I {
-    return item as any;
-  }
-
-  @action
-  remove(...items: T[]) {
-    items.forEach(item => {
-      this.items.delete(item);
-    });
+export class AppPreferenceRegistry extends BaseRegistry<AppPreferenceRegistration, RegisteredAppPreference> {
+  getRegisteredItem(item: AppPreferenceRegistration): RegisteredAppPreference {
+    return {
+      id: item.id || item.title.toLowerCase().replace(/[^0-9a-zA-Z]+/g, "-"),
+      ...item,
+    };
   }
 }

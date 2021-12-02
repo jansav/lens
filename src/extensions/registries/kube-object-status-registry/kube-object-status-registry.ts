@@ -19,41 +19,27 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// Base class for extensions-api registries
-import { action, observable, makeObservable } from "mobx";
-import { LensExtension } from "../lens-extension";
+import type { KubeObject, KubeObjectStatus } from "../../renderer-api/k8s-api";
+import { BaseRegistry } from "../base-registry";
 
-export class BaseRegistry<T, I = T> {
-  private items = observable.map<T, I>([], { deep: false });
+export interface KubeObjectStatusRegistration {
+  kind: string;
+  apiVersions: string[];
+  resolve: (object: KubeObject) => KubeObjectStatus;
+}
 
-  constructor() {
-    makeObservable(this);
+export class KubeObjectStatusRegistry extends BaseRegistry<KubeObjectStatusRegistration> {
+  getItemsForKind(kind: string, apiVersion: string) {
+    return this.getItems()
+      .filter((item) => (
+        item.kind === kind
+        && item.apiVersions.includes(apiVersion)
+      ));
   }
 
-  getItems(): I[] {
-    return Array.from(this.items.values());
-  }
-
-  @action
-  add(items: T | T[], extension?: LensExtension) {
-    const itemArray = [items].flat() as T[];
-
-    itemArray.forEach(item => {
-      this.items.set(item, this.getRegisteredItem(item, extension));
-    });
-
-    return () => this.remove(...itemArray);
-  }
-
-  // eslint-disable-next-line unused-imports/no-unused-vars-ts
-  protected getRegisteredItem(item: T, extension?: LensExtension): I {
-    return item as any;
-  }
-
-  @action
-  remove(...items: T[]) {
-    items.forEach(item => {
-      this.items.delete(item);
-    });
+  getItemsForObject(src: KubeObject) {
+    return this.getItemsForKind(src.kind, src.apiVersion)
+      .map(item => item.resolve(src))
+      .filter(Boolean);
   }
 }

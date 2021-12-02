@@ -27,6 +27,8 @@ import {
   ConfigurableDependencyInjectionContainer,
 } from "@ogre-tools/injectable";
 
+import { setDiKludge } from "../../extensions/registries/get-legacy-singleton/di-kludge";
+
 export const getDiForUnitTesting = () => {
   const di: ConfigurableDependencyInjectionContainer = createContainer();
 
@@ -45,9 +47,12 @@ export const getDiForUnitTesting = () => {
 
   di.preventSideEffects();
 
+  setDiKludge(di);
+
   return di;
 };
 
-const getInjectableFilePaths = memoize(() =>
-  glob.sync("./**/*.injectable.{ts,tsx}", { cwd: __dirname }),
-);
+const getInjectableFilePaths = memoize(() => [
+  ...glob.sync("./**/*.injectable.{ts,tsx}", { cwd: __dirname }),
+  ...glob.sync("../../extensions/registries/**/*.injectable.{ts,tsx}", { cwd: __dirname }),
+]);

@@ -19,41 +19,34 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// Base class for extensions-api registries
-import { action, observable, makeObservable } from "mobx";
-import { LensExtension } from "../lens-extension";
+// Extensions API -> Commands
 
-export class BaseRegistry<T, I = T> {
-  private items = observable.map<T, I>([], { deep: false });
+import { BaseRegistry } from "../base-registry";
+import type { LensExtension } from "../../lens-extension";
+import type { CatalogEntity } from "../../../common/catalog";
 
-  constructor() {
-    makeObservable(this);
-  }
+export interface CommandContext {
+  entity?: CatalogEntity;
+}
 
-  getItems(): I[] {
-    return Array.from(this.items.values());
-  }
+export interface CommandRegistration {
+  id: string;
+  title: string;
+  scope: "entity" | "global";
+  action: (context: CommandContext) => void;
+  isActive?: (context: CommandContext) => boolean;
+}
 
-  @action
-  add(items: T | T[], extension?: LensExtension) {
-    const itemArray = [items].flat() as T[];
+export class CommandRegistry extends BaseRegistry<CommandRegistration> {
+  add(items: CommandRegistration | CommandRegistration[], extension?: LensExtension) {
+    const itemArray = [items].flat();
 
-    itemArray.forEach(item => {
-      this.items.set(item, this.getRegisteredItem(item, extension));
-    });
+    const newIds = itemArray.map((item) => item.id);
+    const currentIds = this.getItems().map((item) => item.id);
 
-    return () => this.remove(...itemArray);
-  }
+    const filteredIds = newIds.filter((id) => !currentIds.includes(id));
+    const filteredItems = itemArray.filter((item) => filteredIds.includes(item.id));
 
-  // eslint-disable-next-line unused-imports/no-unused-vars-ts
-  protected getRegisteredItem(item: T, extension?: LensExtension): I {
-    return item as any;
-  }
-
-  @action
-  remove(...items: T[]) {
-    items.forEach(item => {
-      this.items.delete(item);
-    });
+    return super.add(filteredItems, extension);
   }
 }

@@ -19,41 +19,23 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// Base class for extensions-api registries
-import { action, observable, makeObservable } from "mobx";
-import { LensExtension } from "../lens-extension";
+import { createContainer } from "@ogre-tools/injectable";
+import type { ConfigurableDependencyInjectionContainer } from "@ogre-tools/injectable";
+import { setDiKludge } from "../extensions/registries/get-legacy-singleton/di-kludge";
 
-export class BaseRegistry<T, I = T> {
-  private items = observable.map<T, I>([], { deep: false });
+export const getDi = () => {
+  const di: ConfigurableDependencyInjectionContainer = createContainer(
+    getRequireContextForComponents,
+    getRequireContextForExtensionRegistries,
+  );
 
-  constructor() {
-    makeObservable(this);
-  }
+  setDiKludge(di);
 
-  getItems(): I[] {
-    return Array.from(this.items.values());
-  }
+  return di;
+};
 
-  @action
-  add(items: T | T[], extension?: LensExtension) {
-    const itemArray = [items].flat() as T[];
+const getRequireContextForComponents = () =>
+  require.context("./", true, /\.injectable\.(ts|tsx)$/);
 
-    itemArray.forEach(item => {
-      this.items.set(item, this.getRegisteredItem(item, extension));
-    });
-
-    return () => this.remove(...itemArray);
-  }
-
-  // eslint-disable-next-line unused-imports/no-unused-vars-ts
-  protected getRegisteredItem(item: T, extension?: LensExtension): I {
-    return item as any;
-  }
-
-  @action
-  remove(...items: T[]) {
-    items.forEach(item => {
-      this.items.delete(item);
-    });
-  }
-}
+const getRequireContextForExtensionRegistries = () =>
+  require.context("../extensions/registries", true, /\.injectable\.(ts|tsx)$/);
