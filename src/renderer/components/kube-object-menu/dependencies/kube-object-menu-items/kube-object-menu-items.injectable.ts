@@ -19,7 +19,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 import { Injectable, lifecycleEnum } from "@ogre-tools/injectable";
-import kubeObjectMenuRegistryInjectable from "./kube-object-menu-registry.injectable";
+import kubeObjectMenuRegistryInjectable from "../../../../../extensions/registries/kube-object-menu-registry/kube-object-menu-registry.injectable";
 
 import {
   InstantiationParameter,
