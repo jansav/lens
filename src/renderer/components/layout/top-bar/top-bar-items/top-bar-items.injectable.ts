@@ -18,17 +18,25 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+import type { Injectable } from "@ogre-tools/injectable";
+import { lifecycleEnum } from "@ogre-tools/injectable";
+import type { LensRendererExtension } from "../../../../../extensions/lens-renderer-extension";
+import extensionsInjectable from "../../../../../extensions/extensions.injectable";
+import { computed, IComputedValue } from "mobx";
+import type { TopBarRegistration } from "../top-bar-registration";
 
-import type React from "react";
-import { BaseRegistry } from "./base-registry";
+const topBarItemsInjectable: Injectable<
+  IComputedValue<TopBarRegistration[]>,
+  { extensions: IComputedValue<LensRendererExtension[]> }
+> = {
+  getDependencies: di => ({
+    extensions: di.inject(extensionsInjectable),
+  }),
 
-interface TopBarComponents {
-  Item: React.ComponentType;
-}
+  instantiate: ({ extensions }) =>
+    computed(() => extensions.get().flatMap(extension => extension.topBarItems)),
 
-export interface TopBarRegistration {
-  components: TopBarComponents;
-}
+  lifecycle: lifecycleEnum.singleton,
+};
 
-export class TopBarRegistry extends BaseRegistry<TopBarRegistration> {
-}
+export default topBarItemsInjectable;

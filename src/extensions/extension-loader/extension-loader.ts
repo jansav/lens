@@ -265,7 +265,6 @@ export class ExtensionLoader {
         registries.WelcomeMenuRegistry.getInstance().add(extension.welcomeMenus),
         registries.WelcomeBannerRegistry.getInstance().add(extension.welcomeBanners),
         registries.CatalogEntityDetailRegistry.getInstance().add(extension.catalogEntityDetailItems),
-        registries.TopBarRegistry.getInstance().add(extension.topBarItems),
       ];
 
       this.events.on("remove", (removedExtension: LensRendererExtension) => {
