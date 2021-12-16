@@ -20,7 +20,7 @@
  */
 import { Injectable, lifecycleEnum } from "@ogre-tools/injectable";
 import { computed, IComputedValue } from "mobx";
-import type { InstalledExtension } from "../../../../extensions/extension-discovery";
+import type { InstalledExtension } from "../../../../extensions/extension-discovery/extension-discovery";
 import type { ExtensionLoader } from "../../../../extensions/extension-loader";
 import extensionLoaderInjectable from "../../../../extensions/extension-loader/extension-loader.injectable";
 

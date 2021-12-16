@@ -23,17 +23,36 @@ import AwaitLock from "await-lock";
 import child_process from "child_process";
 import fs from "fs-extra";
 import path from "path";
-import logger from "../main/logger";
-import { extensionPackagesRoot } from "./extension-loader";
+import logger from "../../main/logger";
+import { extensionPackagesRoot } from "../extension-loader";
 import type { PackageJson } from "type-fest";
 
 const logModule = "[EXTENSION-INSTALLER]";
 
+export interface ExtensionInstallerType {
+  readonly extensionPackagesRoot: string;
+  readonly npmPath: any;
+
+  /**
+   * Write package.json to the file system and execute npm install for it.
+   */
+  installPackages(
+    packageJsonPath: string,
+    packagesJson: PackageJson,
+  ): Promise<void>;
+
+  /**
+   * Install single package using npm
+   */
+  installPackage(name: string): Promise<void>;
+
+  npm(args: string[]): Promise<void>;
+}
 
 /**
  * Installs dependencies for extensions
  */
-export class ExtensionInstaller {
+export class ExtensionInstaller implements ExtensionInstallerType {
   private installLock = new AwaitLock();
 
   get extensionPackagesRoot() {
@@ -47,19 +66,36 @@ export class ExtensionInstaller {
   /**
    * Write package.json to the file system and execute npm install for it.
    */
-  async installPackages(packageJsonPath: string, packagesJson: PackageJson): Promise<void> {
+  async installPackages(
+    packageJsonPath: string,
+    packagesJson: PackageJson,
+  ): Promise<void> {
     // Mutual exclusion to install packages in sequence
     await this.installLock.acquireAsync();
 
     try {
       // Write the package.json which will be installed in .installDependencies()
-      await fs.writeFile(path.join(packageJsonPath), JSON.stringify(packagesJson, null, 2), {
-        mode: 0o600,
-      });
+      await fs.writeFile(
+        path.join(packageJsonPath),
+        JSON.stringify(packagesJson, null, 2),
+        {
+          mode: 0o600,
+        },
+      );
 
-      logger.info(`${logModule} installing dependencies at ${extensionPackagesRoot()}`);
-      await this.npm(["install", "--no-audit", "--only=prod", "--prefer-offline", "--no-package-lock"]);
-      logger.info(`${logModule} dependencies installed at ${extensionPackagesRoot()}`);
+      logger.info(
+        `${logModule} installing dependencies at ${extensionPackagesRoot()}`,
+      );
+      await this.npm([
+        "install",
+        "--no-audit",
+        "--only=prod",
+        "--prefer-offline",
+        "--no-package-lock",
+      ]);
+      logger.info(
+        `${logModule} dependencies installed at ${extensionPackagesRoot()}`,
+      );
     } finally {
       this.installLock.release();
     }
@@ -73,15 +109,27 @@ export class ExtensionInstaller {
     await this.installLock.acquireAsync();
 
     try {
-      logger.info(`${logModule} installing package from ${name} to ${extensionPackagesRoot()}`);
-      await this.npm(["install", "--no-audit", "--only=prod", "--prefer-offline", "--no-package-lock", "--no-save", name]);
-      logger.info(`${logModule} package ${name} installed to ${extensionPackagesRoot()}`);
+      logger.info(
+        `${logModule} installing package from ${name} to ${extensionPackagesRoot()}`,
+      );
+      await this.npm([
+        "install",
+        "--no-audit",
+        "--only=prod",
+        "--prefer-offline",
+        "--no-package-lock",
+        "--no-save",
+        name,
+      ]);
+      logger.info(
+        `${logModule} package ${name} installed to ${extensionPackagesRoot()}`,
+      );
     } finally {
       this.installLock.release();
     }
   }
 
-  private npm(args: string[]): Promise<void> {
+  npm(args: string[]): Promise<void> {
     return new Promise((resolve, reject) => {
       const child = child_process.fork(this.npmPath, args, {
         cwd: extensionPackagesRoot(),
@@ -94,7 +142,7 @@ export class ExtensionInstaller {
         stderr += String(data);
       });
 
-      child.on("close", (code) => {
+      child.on("close", code => {
         if (code !== 0) {
           reject(new Error(stderr));
         } else {
@@ -108,5 +156,3 @@ export class ExtensionInstaller {
     });
   }
 }
-
-export const extensionInstaller = new ExtensionInstaller();

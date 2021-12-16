@@ -24,6 +24,10 @@ import { Dependencies, unpackExtension } from "./unpack-extension";
 import type { InstallRequestValidated } from "../create-temp-files-and-validate/create-temp-files-and-validate";
 import type { Disposer } from "../../../../../common/utils";
 import extensionLoaderInjectable from "../../../../../extensions/extension-loader/extension-loader.injectable";
+import getExtensionDestFolderInjectable
+  from "../get-extension-dest-folder/get-extension-dest-folder.injectable";
+import extensionInstallationStateStoreInjectable
+  from "../../../../../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
 
 const unpackExtensionInjectable: Injectable<
   (
@@ -34,6 +38,8 @@ const unpackExtensionInjectable: Injectable<
 > = {
   getDependencies: di => ({
     extensionLoader: di.inject(extensionLoaderInjectable),
+    getExtensionDestFolder: di.inject(getExtensionDestFolderInjectable),
+    extensionInstallationStateStore: di.inject(extensionInstallationStateStoreInjectable),
   }),
 
   instantiate: unpackExtension,

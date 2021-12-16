@@ -20,22 +20,21 @@
  */
 import type { Injectable } from "@ogre-tools/injectable";
 import { lifecycleEnum } from "@ogre-tools/injectable";
-import { attemptInstallByInfo,  Dependencies,  ExtensionInfo } from "./attempt-install-by-info";
-import attemptInstallInjectable from "../attempt-install/attempt-install.injectable";
-import extensionInstallationStateStoreInjectable
-  from "../../../../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
+import type { LensExtensionManifest } from "../../lens-extension";
+import { appSemVer } from "../../../common/vars";
+import type { Dependencies } from "./is-compatible-extension";
+import { isCompatibleExtension } from "./is-compatible-extension";
 
-const attemptInstallByInfoInjectable: Injectable<
-  (extensionInfo: ExtensionInfo) => Promise<void>,
+const isCompatibleExtensionInjectable: Injectable<
+  (manifest: LensExtensionManifest) => boolean,
   Dependencies
 > = {
-  getDependencies: di => ({
-    attemptInstall: di.inject(attemptInstallInjectable),
-    extensionInstallationStateStore: di.inject(extensionInstallationStateStoreInjectable),
+  getDependencies: () => ({
+    appSemVer,
   }),
 
-  instantiate: attemptInstallByInfo,
+  instantiate: isCompatibleExtension,
   lifecycle: lifecycleEnum.singleton,
 };
 
-export default attemptInstallByInfoInjectable;
+export default isCompatibleExtensionInjectable;

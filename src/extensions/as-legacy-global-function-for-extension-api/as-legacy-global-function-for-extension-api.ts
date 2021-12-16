@@ -19,23 +19,26 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 import type { Injectable } from "@ogre-tools/injectable";
-import { lifecycleEnum } from "@ogre-tools/injectable";
-import { attemptInstallByInfo,  Dependencies,  ExtensionInfo } from "./attempt-install-by-info";
-import attemptInstallInjectable from "../attempt-install/attempt-install.injectable";
-import extensionInstallationStateStoreInjectable
-  from "../../../../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
 
-const attemptInstallByInfoInjectable: Injectable<
-  (extensionInfo: ExtensionInfo) => Promise<void>,
-  Dependencies
-> = {
-  getDependencies: di => ({
-    attemptInstall: di.inject(attemptInstallInjectable),
-    extensionInstallationStateStore: di.inject(extensionInstallationStateStoreInjectable),
-  }),
+import { getLegacyGlobalDiForExtensionApi } from "./legacy-global-di-for-extension-api";
 
-  instantiate: attemptInstallByInfo,
-  lifecycle: lifecycleEnum.singleton,
-};
+type Awaited<TMaybePromise> = TMaybePromise extends PromiseLike<infer TValue>
+  ? TValue
+  : TMaybePromise;
 
-export default attemptInstallByInfoInjectable;
+type FactoryType = <
+  TInjectable extends Injectable<TInstance, TDependencies>,
+  TInstance extends (...args: unknown[]) => any,
+  TDependencies extends object,
+  TFunction extends (...args: unknown[]) => any = Awaited<ReturnType<TInjectable["instantiate"]>>,
+>(
+  injectableKey: TInjectable,
+) => (...args: Parameters<TFunction>) => ReturnType<TFunction>;
+
+export const asLegacyGlobalFunctionForExtensionApi: FactoryType =
+  injectableKey =>
+    (...args) => {
+      const injected = getLegacyGlobalDiForExtensionApi().inject(injectableKey);
+
+      return injected(...args);
+    };

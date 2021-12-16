@@ -19,10 +19,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { LensExtensionId } from "./lens-extension";
-import { BaseStore } from "../common/base-store";
-import { action, computed, observable, makeObservable } from "mobx";
-import { toJS } from "../common/utils";
+import type { LensExtensionId } from "../lens-extension";
+import { action, computed, makeObservable, observable } from "mobx";
+import { toJS } from "../../common/utils";
+import { BaseStore } from "../../common/base-store";
 
 export interface LensExtensionsStoreModel {
   extensions: Record<LensExtensionId, LensExtensionState>;
@@ -33,7 +33,19 @@ export interface LensExtensionState {
   name: string;
 }
 
-export class ExtensionsStore extends BaseStore<LensExtensionsStoreModel> {
+export interface ExtensionsStoreType {
+  readonly enabledExtensions: any[];
+
+  isEnabled({ id, isBundled }: { id: string; isBundled: boolean }): boolean;
+
+  mergeState(
+    extensionsState: Record<LensExtensionId, LensExtensionState>,
+  ): void;
+
+  toJSON(): LensExtensionsStoreModel;
+}
+
+export class ExtensionsStore extends BaseStore<LensExtensionsStoreModel> implements ExtensionsStoreType  {
   readonly displayName = "ExtensionsStore";
   constructor() {
     super({
@@ -52,7 +64,7 @@ export class ExtensionsStore extends BaseStore<LensExtensionsStoreModel> {
 
   protected state = observable.map<LensExtensionId, LensExtensionState>();
 
-  isEnabled({ id, isBundled }: { id: string, isBundled: boolean }): boolean {
+  isEnabled({ id, isBundled }: { id: string; isBundled: boolean }): boolean {
     // By default false, so that copied extensions are disabled by default.
     // If user installs the extension from the UI, the Extensions component will specifically enable it.
     return isBundled || Boolean(this.state.get(id)?.enabled);
