@@ -25,6 +25,8 @@ import type { Dependencies } from "./install-from-input";
 import { installFromInput } from "./install-from-input";
 import attemptInstallByInfoInjectable
   from "../attempt-install-by-info/attempt-install-by-info.injectable";
+import extensionInstallationStateStoreInjectable
+  from "../../../../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
 
 const installFromInputInjectable: Injectable<
   (input: string) => Promise<void>,
@@ -33,6 +35,7 @@ const installFromInputInjectable: Injectable<
   getDependencies: di => ({
     attemptInstall: di.inject(attemptInstallInjectable),
     attemptInstallByInfo: di.inject(attemptInstallByInfoInjectable),
+    extensionInstallationStateStore: di.inject(extensionInstallationStateStoreInjectable),
   }),
 
   instantiate: installFromInput,

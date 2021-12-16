@@ -28,6 +28,11 @@ import type { Dependencies } from "./attempt-install";
 import { attemptInstall } from "./attempt-install";
 import type { InstallRequest } from "./install-request";
 import unpackExtensionInjectable from "./unpack-extension/unpack-extension.injectable";
+import getExtensionDestFolderInjectable
+  from "./get-extension-dest-folder/get-extension-dest-folder.injectable";
+import createTempFilesAndValidateInjectable from "./create-temp-files-and-validate/create-temp-files-and-validate.injectable";
+import extensionInstallationStateStoreInjectable
+  from "../../../../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
 
 const attemptInstallInjectable: Injectable<
   (request: InstallRequest, d?: ExtendableDisposer) => Promise<void>,
@@ -37,6 +42,9 @@ const attemptInstallInjectable: Injectable<
     extensionLoader: di.inject(extensionLoaderInjectable),
     uninstallExtension: di.inject(uninstallExtensionInjectable),
     unpackExtension: di.inject(unpackExtensionInjectable),
+    createTempFilesAndValidate: di.inject(createTempFilesAndValidateInjectable),
+    getExtensionDestFolder: di.inject(getExtensionDestFolderInjectable),
+    extensionInstallationStateStore: di.inject(extensionInstallationStateStoreInjectable),
   }),
 
   instantiate: attemptInstall,

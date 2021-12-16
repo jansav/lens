@@ -18,24 +18,15 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import type { Injectable } from "@ogre-tools/injectable";
-import { lifecycleEnum } from "@ogre-tools/injectable";
-import { attemptInstallByInfo,  Dependencies,  ExtensionInfo } from "./attempt-install-by-info";
-import attemptInstallInjectable from "../attempt-install/attempt-install.injectable";
-import extensionInstallationStateStoreInjectable
-  from "../../../../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
+import type { ExtensionDiscovery } from "../../../../../extensions/extension-discovery/extension-discovery";
+import { sanitizeExtensionName } from "../../../../../extensions/lens-extension";
+import path from "path";
 
-const attemptInstallByInfoInjectable: Injectable<
-  (extensionInfo: ExtensionInfo) => Promise<void>,
-  Dependencies
-> = {
-  getDependencies: di => ({
-    attemptInstall: di.inject(attemptInstallInjectable),
-    extensionInstallationStateStore: di.inject(extensionInstallationStateStoreInjectable),
-  }),
+export interface Dependencies {
+  extensionDiscovery: ExtensionDiscovery;
+}
 
-  instantiate: attemptInstallByInfo,
-  lifecycle: lifecycleEnum.singleton,
-};
-
-export default attemptInstallByInfoInjectable;
+export const getExtensionDestFolder =
+  ({ extensionDiscovery }: Dependencies) =>
+    (name: string) =>
+      path.join(extensionDiscovery.localFolderPath, sanitizeExtensionName(name));

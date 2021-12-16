@@ -24,6 +24,10 @@ import type { LensExtensionId } from "../../../../extensions/lens-extension";
 import extensionLoaderInjectable
   from "../../../../extensions/extension-loader/extension-loader.injectable";
 import { Dependencies, uninstallExtension } from "./uninstall-extension";
+import extensionInstallationStateStoreInjectable
+  from "../../../../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
+import extensionDiscoveryInjectable
+  from "../../../../extensions/extension-discovery/extension-discovery.injectable";
 
 const uninstallExtensionInjectable: Injectable<
   (extensionId: LensExtensionId) => Promise<boolean>,
@@ -31,6 +35,8 @@ const uninstallExtensionInjectable: Injectable<
 > = {
   getDependencies: di => ({
     extensionLoader: di.inject(extensionLoaderInjectable),
+    extensionDiscovery: di.inject(extensionDiscoveryInjectable),
+    extensionInstallationStateStore: di.inject(extensionInstallationStateStoreInjectable),
   }),
 
   instantiate: uninstallExtension,

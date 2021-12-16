@@ -20,22 +20,15 @@
  */
 import type { Injectable } from "@ogre-tools/injectable";
 import { lifecycleEnum } from "@ogre-tools/injectable";
-import { attemptInstallByInfo,  Dependencies,  ExtensionInfo } from "./attempt-install-by-info";
-import attemptInstallInjectable from "../attempt-install/attempt-install.injectable";
-import extensionInstallationStateStoreInjectable
-  from "../../../../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
+import {
+  ExtensionInstaller,
+  ExtensionInstallerType,
+} from "./extension-installer";
 
-const attemptInstallByInfoInjectable: Injectable<
-  (extensionInfo: ExtensionInfo) => Promise<void>,
-  Dependencies
-> = {
-  getDependencies: di => ({
-    attemptInstall: di.inject(attemptInstallInjectable),
-    extensionInstallationStateStore: di.inject(extensionInstallationStateStoreInjectable),
-  }),
-
-  instantiate: attemptInstallByInfo,
+const extensionInstallerInjectable: Injectable<ExtensionInstallerType> = {
+  getDependencies: () => ({}),
+  instantiate: () => new ExtensionInstaller(),
   lifecycle: lifecycleEnum.singleton,
 };
 
-export default attemptInstallByInfoInjectable;
+export default extensionInstallerInjectable;

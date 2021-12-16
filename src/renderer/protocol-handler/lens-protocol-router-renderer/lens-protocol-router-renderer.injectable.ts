@@ -23,6 +23,8 @@ import { lifecycleEnum } from "@ogre-tools/injectable";
 import extensionLoaderInjectable from "../../../extensions/extension-loader/extension-loader.injectable";
 import type { Dependencies } from "./lens-protocol-router-renderer";
 import { LensProtocolRouterRenderer } from "./lens-protocol-router-renderer";
+import extensionsStoreInjectable
+  from "../../../extensions/extensions-store/extensions-store.injectable";
 
 const lensProtocolRouterRendererInjectable: Injectable<
   LensProtocolRouterRenderer,
@@ -30,6 +32,7 @@ const lensProtocolRouterRendererInjectable: Injectable<
 > = {
   getDependencies: di => ({
     extensionLoader: di.inject(extensionLoaderInjectable),
+    extensionsStore: di.inject(extensionsStoreInjectable),
   }),
 
   instantiate: dependencies => new LensProtocolRouterRenderer(dependencies),

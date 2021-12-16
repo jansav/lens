@@ -29,8 +29,8 @@ import { ClusterStore } from "../../common/cluster-store";
 import { broadcastMessage, ipcMainOn, ipcRendererOn, requestMain, ipcMainHandle } from "../../common/ipc";
 import { Disposer, getHostedClusterId, toJS } from "../../common/utils";
 import logger from "../../main/logger";
-import type { InstalledExtension } from "../extension-discovery";
-import { ExtensionsStore } from "../extensions-store";
+import type { InstalledExtension } from "../extension-discovery/extension-discovery";
+import type { ExtensionsStore } from "../extensions-store/extensions-store";
 import type { LensExtension, LensExtensionConstructor, LensExtensionId } from "../lens-extension";
 import type { LensRendererExtension } from "../lens-renderer-extension";
 import * as registries from "../registries";
@@ -40,6 +40,10 @@ export function extensionPackagesRoot() {
 }
 
 const logModule = "[EXTENSIONS-LOADER]";
+
+export interface Dependencies {
+  extensionsStore: ExtensionsStore
+}
 
 /**
  * Loads installed extensions to the Lens application
@@ -75,7 +79,7 @@ export class ExtensionLoader {
     return when(() => this.isLoaded);
   }
 
-  constructor() {
+  constructor(protected dependencies : Dependencies) {
     makeObservable(this);
     observe(this.instances, change => {
       switch (change.type) {
@@ -156,7 +160,7 @@ export class ExtensionLoader {
 
     // save state on change `extension.isEnabled`
     reaction(() => this.storeState, extensionsState => {
-      ExtensionsStore.getInstance().mergeState(extensionsState);
+      this.dependencies.extensionsStore.mergeState(extensionsState);
     });
   }
 

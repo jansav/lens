@@ -24,7 +24,7 @@ import {
   confirmUninstallExtension,
   Dependencies,
 } from "./confirm-uninstall-extension";
-import type { InstalledExtension } from "../../../../extensions/extension-discovery";
+import type { InstalledExtension } from "../../../../extensions/extension-discovery/extension-discovery";
 import uninstallExtensionInjectable from "../uninstall-extension/uninstall-extension.injectable";
 
 const confirmUninstallExtensionInjectable: Injectable<

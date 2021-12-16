@@ -20,22 +20,25 @@
  */
 import type { Injectable } from "@ogre-tools/injectable";
 import { lifecycleEnum } from "@ogre-tools/injectable";
-import { attemptInstallByInfo,  Dependencies,  ExtensionInfo } from "./attempt-install-by-info";
-import attemptInstallInjectable from "../attempt-install/attempt-install.injectable";
-import extensionInstallationStateStoreInjectable
-  from "../../../../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
+import {
+  createTempFilesAndValidate,
+  Dependencies,
+  InstallRequestValidated,
+} from "./create-temp-files-and-validate";
+import extensionDiscoveryInjectable
+  from "../../../../../extensions/extension-discovery/extension-discovery.injectable";
+import type { InstallRequest } from "../install-request";
 
-const attemptInstallByInfoInjectable: Injectable<
-  (extensionInfo: ExtensionInfo) => Promise<void>,
+const createTempFilesAndValidateInjectable: Injectable<
+  (installRequest: InstallRequest) => Promise<InstallRequestValidated | null>,
   Dependencies
 > = {
   getDependencies: di => ({
-    attemptInstall: di.inject(attemptInstallInjectable),
-    extensionInstallationStateStore: di.inject(extensionInstallationStateStoreInjectable),
+    extensionDiscovery: di.inject(extensionDiscoveryInjectable),
   }),
 
-  instantiate: attemptInstallByInfo,
+  instantiate: createTempFilesAndValidate,
   lifecycle: lifecycleEnum.singleton,
 };
 
-export default attemptInstallByInfoInjectable;
+export default createTempFilesAndValidateInjectable;
