@@ -21,7 +21,7 @@
 
 import fse from "fs-extra";
 import path from "path";
-import { AppPaths } from "../../common/app-paths";
+import { AppPaths } from "../../common/app-paths/app-paths";
 
 export function fileNameMigration() {
   const userDataPath = AppPaths.get("userData");

@@ -44,10 +44,8 @@ import electron from "electron";
 import { stdout, stderr } from "process";
 import { ThemeStore } from "../../renderer/theme.store";
 import type { ClusterStoreModel } from "../cluster-store";
-import { AppPaths } from "../app-paths";
 
 console = new Console(stdout, stderr);
-AppPaths.init();
 
 describe("user store tests", () => {
   describe("for an empty config", () => {

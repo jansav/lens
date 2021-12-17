@@ -30,7 +30,6 @@ import { ConfirmDialog } from "../../confirm-dialog";
 import { Extensions } from "../extensions";
 import mockFs from "mock-fs";
 import { mockWindow } from "../../../../../__mocks__/windowMock";
-import { AppPaths } from "../../../../common/app-paths";
 import extensionLoaderInjectable
   from "../../../../extensions/extension-loader/extension-loader.injectable";
 import { getDiForUnitTesting } from "../../getDiForUnitTesting";
@@ -74,8 +73,6 @@ jest.mock("electron", () => ({
     handle: jest.fn(),
   },
 }));
-
-AppPaths.init();
 
 describe("Extensions", () => {
   let extensionLoader: ExtensionLoader;

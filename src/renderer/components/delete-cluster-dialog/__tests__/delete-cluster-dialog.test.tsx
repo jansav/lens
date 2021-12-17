@@ -25,9 +25,8 @@ import mockFs from "mock-fs";
 import React from "react";
 import selectEvent from "react-select-event";
 
-import { Cluster } from "../../../../main/cluster";
+import { Cluster } from "../../../../main/cluster/cluster";
 import { DeleteClusterDialog } from "../delete-cluster-dialog";
-import { AppPaths } from "../../../../common/app-paths";
 
 jest.mock("electron", () => ({
   app: {
@@ -44,8 +43,6 @@ jest.mock("electron", () => ({
     handle: jest.fn(),
   },
 }));
-
-AppPaths.init();
 
 const kubeconfig = `
 apiVersion: v1

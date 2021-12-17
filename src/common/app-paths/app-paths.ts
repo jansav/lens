@@ -22,9 +22,9 @@
 import { app, ipcMain, ipcRenderer } from "electron";
 import { observable, when } from "mobx";
 import path from "path";
-import logger from "./logger";
-import { fromEntries, toJS } from "./utils";
-import { isWindows } from "./vars";
+import logger from "../logger";
+import { fromEntries, toJS } from "../utils";
+import { isWindows } from "../vars";
 
 export type PathName = Parameters<typeof app["getPath"]>[0];
 
@@ -51,27 +51,27 @@ if (isWindows) {
 }
 
 export class AppPaths {
-  private static paths = observable.box<Record<PathName, string> | undefined>();
-  private static readonly ipcChannel = "get-app-paths";
+  private paths = observable.box<Record<PathName, string> | undefined>();
+  private readonly ipcChannel = "get-app-paths";
 
   /**
    * Initializes the local copy of the paths from electron.
    */
-  static async init(): Promise<void> {
+  async init(): Promise<void> {
     logger.info(`[APP-PATHS]: initializing`);
 
-    if (AppPaths.paths.get()) {
+    if (this.paths.get()) {
       return void logger.error("[APP-PATHS]: init called more than once");
     }
 
     if (ipcMain) {
-      AppPaths.initMain();
+      this.initMain();
     } else {
-      await AppPaths.initRenderer();
+      await this.initRenderer();
     }
   }
 
-  private static initMain(): void {
+  private initMain(): void {
     if (process.env.CICD) {
       app.setPath("appData", process.env.CICD);
     }
@@ -88,18 +88,18 @@ export class AppPaths {
       }
     };
 
-    AppPaths.paths.set(fromEntries(pathNames.map(pathName => [pathName, getPath(pathName)] as const).filter(([, path]) => path)));
-    ipcMain.handle(AppPaths.ipcChannel, () => toJS(AppPaths.paths.get()));
+    this.paths.set(fromEntries(pathNames.map(pathName => [pathName, getPath(pathName)] as const).filter(([, path]) => path)));
+    ipcMain.handle(this.ipcChannel, () => toJS(this.paths.get()));
   }
 
-  private static async initRenderer(): Promise<void> {
-    const paths = await ipcRenderer.invoke(AppPaths.ipcChannel);
+  private async initRenderer(): Promise<void> {
+    const paths = await ipcRenderer.invoke(this.ipcChannel);
 
     if (!paths || typeof paths !== "object") {
       throw Object.assign(new Error("[APP-PATHS]: ipc handler returned unexpected data"), { data: paths });
     }
 
-    AppPaths.paths.set(paths);
+    this.paths.set(paths);
   }
 
   /**
@@ -107,21 +107,21 @@ export class AppPaths {
    * This function throws if called before initialization.
    * @param name The name of the path field
    */
-  static get(name: PathName): string {
-    if (!AppPaths.paths.get()) {
+  get(name: PathName): string {
+    if (!this.paths.get()) {
       throw new Error("AppPaths.init() has not been called");
     }
 
-    return AppPaths.paths.get()[name];
+    return this.paths.get()[name];
   }
 
   /**
    * An async version of `AppPaths.get()` which waits for `AppPaths.init()` to
    * be called before returning
    */
-  static async getAsync(name: PathName): Promise<string> {
-    await when(() => Boolean(AppPaths.paths.get()));
+  async getAsync(name: PathName): Promise<string> {
+    await when(() => Boolean(this.paths.get()));
 
-    return AppPaths.paths.get()[name];
+    return this.paths.get()[name];
   }
 }

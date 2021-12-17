@@ -18,37 +18,35 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import type { Injectable } from "@ogre-tools/injectable";
+import { getInjectable } from "@ogre-tools/injectable";
 import { lifecycleEnum } from "@ogre-tools/injectable";
 
-import type { ExtendableDisposer } from "../../../../common/utils";
 import extensionLoaderInjectable from "../../../../extensions/extension-loader/extension-loader.injectable";
 import uninstallExtensionInjectable from "../uninstall-extension/uninstall-extension.injectable";
-import type { Dependencies } from "./attempt-install";
 import { attemptInstall } from "./attempt-install";
-import type { InstallRequest } from "./install-request";
 import unpackExtensionInjectable from "./unpack-extension/unpack-extension.injectable";
-import getExtensionDestFolderInjectable
-  from "./get-extension-dest-folder/get-extension-dest-folder.injectable";
+import getExtensionDestFolderInjectable from "./get-extension-dest-folder/get-extension-dest-folder.injectable";
 import createTempFilesAndValidateInjectable from "./create-temp-files-and-validate/create-temp-files-and-validate.injectable";
-import extensionInstallationStateStoreInjectable
-  from "../../../../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
+import extensionInstallationStateStoreInjectable from "../../../../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
 
-const attemptInstallInjectable: Injectable<
-  (request: InstallRequest, d?: ExtendableDisposer) => Promise<void>,
-  Dependencies
-> = {
-  getDependencies: di => ({
-    extensionLoader: di.inject(extensionLoaderInjectable),
-    uninstallExtension: di.inject(uninstallExtensionInjectable),
-    unpackExtension: di.inject(unpackExtensionInjectable),
-    createTempFilesAndValidate: di.inject(createTempFilesAndValidateInjectable),
-    getExtensionDestFolder: di.inject(getExtensionDestFolderInjectable),
-    extensionInstallationStateStore: di.inject(extensionInstallationStateStoreInjectable),
-  }),
+const attemptInstallInjectable = getInjectable({
+  instantiate: async (di) =>
+    attemptInstall({
+      extensionLoader: di.inject(extensionLoaderInjectable),
+      uninstallExtension: di.inject(uninstallExtensionInjectable),
+      unpackExtension: di.inject(unpackExtensionInjectable),
 
-  instantiate: attemptInstall,
+      createTempFilesAndValidate: await di.inject(
+        createTempFilesAndValidateInjectable,
+      ),
+
+      getExtensionDestFolder: di.inject(getExtensionDestFolderInjectable),
+      extensionInstallationStateStore: di.inject(
+        extensionInstallationStateStoreInjectable,
+      ),
+    }),
+
   lifecycle: lifecycleEnum.singleton,
-};
+});
 
 export default attemptInstallInjectable;

@@ -48,7 +48,7 @@ jest.mock("../../common/ipc");
 jest.mock("child_process");
 jest.mock("tcp-port-used");
 
-import { Cluster } from "../cluster";
+import { Cluster } from "../cluster/cluster";
 import { KubeAuthProxy } from "../kube-auth-proxy";
 import { broadcastMessage } from "../../common/ipc";
 import { ChildProcess, spawn } from "child_process";
@@ -60,7 +60,6 @@ import { UserStore } from "../../common/user-store";
 import { Console } from "console";
 import { stdout, stderr } from "process";
 import mockFs from "mock-fs";
-import { AppPaths } from "../../common/app-paths";
 
 console = new Console(stdout, stderr);
 
@@ -83,7 +82,6 @@ jest.mock("electron", () => ({
     handle: jest.fn(),
   },
 }));
-AppPaths.init();
 
 describe("kube auth proxy tests", () => {
   beforeEach(() => {

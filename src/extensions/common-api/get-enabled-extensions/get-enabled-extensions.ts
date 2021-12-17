@@ -20,7 +20,7 @@
  */
 import type { ExtensionsStore } from "../../extensions-store/extensions-store";
 
-export interface Dependencies {
+interface Dependencies {
   extensionsStore: ExtensionsStore;
 }
 

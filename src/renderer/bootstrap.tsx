@@ -44,22 +44,18 @@ import { FilesystemProvisionerStore } from "../main/extension-filesystem";
 import { ThemeStore } from "./theme.store";
 import { SentryInit } from "../common/sentry";
 import { TerminalStore } from "./components/dock/terminal.store";
-import { AppPaths } from "../common/app-paths";
 import { registerCustomThemes } from "./components/monaco-editor";
 import { getDi } from "./components/getDi";
 import { DiContextProvider } from "@ogre-tools/injectable-react";
 import type { DependencyInjectionContainer } from "@ogre-tools/injectable";
 import extensionLoaderInjectable from "../extensions/extension-loader/extension-loader.injectable";
 import type { ExtensionLoader } from "../extensions/extension-loader";
-import bindProtocolAddRouteHandlersInjectable
-  from "./protocol-handler/bind-protocol-add-route-handlers/bind-protocol-add-route-handlers.injectable";
+import bindProtocolAddRouteHandlersInjectable from "./protocol-handler/bind-protocol-add-route-handlers/bind-protocol-add-route-handlers.injectable";
 import type { LensProtocolRouterRenderer } from "./protocol-handler";
-import lensProtocolRouterRendererInjectable
-  from "./protocol-handler/lens-protocol-router-renderer/lens-protocol-router-renderer.injectable";
-import extensionDiscoveryInjectable
-  from "../extensions/extension-discovery/extension-discovery.injectable";
-import extensionInstallationStateStoreInjectable
-  from "../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
+import lensProtocolRouterRendererInjectable from "./protocol-handler/lens-protocol-router-renderer/lens-protocol-router-renderer.injectable";
+import extensionDiscoveryInjectable from "../extensions/extension-discovery/extension-discovery.injectable";
+import extensionInstallationStateStoreInjectable from "../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
+import clusterInjectable from "../main/cluster/cluster.injectable";
 
 if (process.isMainFrame) {
   SentryInit();
@@ -80,7 +76,6 @@ async function attachChromeDebugger() {
 }
 
 type AppComponent = React.ComponentType & {
-
   // TODO: This static method is criminal as it has no direct relation with component
   init(
     rootElem: HTMLElement,
@@ -90,11 +85,15 @@ type AppComponent = React.ComponentType & {
   ): Promise<void>;
 };
 
-export async function bootstrap(comp: () => Promise<AppComponent>, di: DependencyInjectionContainer) {
+export async function bootstrap(
+  comp: () => Promise<AppComponent>,
+  di: DependencyInjectionContainer,
+) {
   const rootElem = document.getElementById("app");
-  const logPrefix = `[BOOTSTRAP-${process.isMainFrame ? "ROOT" : "CLUSTER"}-FRAME]:`;
+  const logPrefix = `[BOOTSTRAP-${
+    process.isMainFrame ? "ROOT" : "CLUSTER"
+  }-FRAME]:`;
 
-  await AppPaths.init();
   UserStore.createInstance();
 
   await attachChromeDebugger();
@@ -140,12 +139,15 @@ export async function bootstrap(comp: () => Promise<AppComponent>, di: Dependenc
 
   extensionLoader.init();
 
-  const extensionDiscovery = di.inject(extensionDiscoveryInjectable);
+  const extensionDiscovery = await di.inject(extensionDiscoveryInjectable);
 
   extensionDiscovery.init();
 
   // ClusterStore depends on: UserStore
-  const clusterStore = ClusterStore.createInstance();
+  const clusterStore = ClusterStore.createInstance({
+    createCluster: (instantiationParameter) =>
+      di.inject(clusterInjectable, instantiationParameter),
+  });
 
   await clusterStore.loadInitialOnRenderer();
 
@@ -160,7 +162,9 @@ export async function bootstrap(comp: () => Promise<AppComponent>, di: Dependenc
   TerminalStore.createInstance();
   WeblinkStore.createInstance();
 
-  const extensionInstallationStateStore = di.inject(extensionInstallationStateStoreInjectable);
+  const extensionInstallationStateStore = di.inject(
+    extensionInstallationStateStoreInjectable,
+  );
 
   extensionInstallationStateStore.bindIpcListeners();
 
@@ -172,15 +176,22 @@ export async function bootstrap(comp: () => Promise<AppComponent>, di: Dependenc
   // init app's dependencies if any
   const App = await comp();
 
-  const bindProtocolAddRouteHandlers = di.inject(bindProtocolAddRouteHandlersInjectable);
-  const lensProtocolRouterRenderer = di.inject(lensProtocolRouterRendererInjectable);
+  const bindProtocolAddRouteHandlers = di.inject(
+    bindProtocolAddRouteHandlersInjectable,
+  );
+  const lensProtocolRouterRenderer = di.inject(
+    lensProtocolRouterRendererInjectable,
+  );
 
-  await App.init(rootElem, extensionLoader, bindProtocolAddRouteHandlers, lensProtocolRouterRenderer);
+  await App.init(
+    rootElem,
+    extensionLoader,
+    bindProtocolAddRouteHandlers,
+    lensProtocolRouterRenderer,
+  );
 
   render(
-    <DiContextProvider value={{ di }}>
-      {DefaultProps(App)}
-    </DiContextProvider>,
+    <DiContextProvider value={{ di }}>{DefaultProps(App)}</DiContextProvider>,
 
     rootElem,
   );
@@ -197,7 +208,6 @@ bootstrap(
   di,
 );
 
-
 /**
  * Exports for virtual package "@k8slens/extensions" for renderer-process.
  * All exporting names available in global runtime scope:
@@ -208,11 +218,4 @@ const LensExtensions = {
   Renderer: LensExtensionsRendererApi,
 };
 
-export {
-  React,
-  ReactRouter,
-  ReactRouterDom,
-  Mobx,
-  MobxReact,
-  LensExtensions,
-};
+export { React, ReactRouter, ReactRouterDom, Mobx, MobxReact, LensExtensions };

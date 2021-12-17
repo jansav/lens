@@ -139,7 +139,7 @@ describe("ExtensionLoader", () => {
       mergeState: jest.fn(),
     };
 
-    di.override(extensionsStoreInjectable, extensionsStoreStub);
+    di.override(extensionsStoreInjectable, () => extensionsStoreStub);
   });
 
   it.only("renderer updates extension after ipc broadcast", async done => {

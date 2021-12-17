@@ -22,7 +22,6 @@
 import { anyObject } from "jest-mock-extended";
 import mockFs from "mock-fs";
 import logger from "../../main/logger";
-import { AppPaths } from "../app-paths";
 import { ClusterStore } from "../cluster-store";
 import { HotbarStore } from "../hotbar-store";
 
@@ -132,8 +131,6 @@ jest.mock("electron", () => ({
     handle: jest.fn(),
   },
 }));
-
-AppPaths.init();
 
 describe("HotbarStore", () => {
   beforeEach(() => {

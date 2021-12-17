@@ -18,14 +18,12 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import type { Injectable } from "@ogre-tools/injectable";
-import { lifecycleEnum } from "@ogre-tools/injectable";
-import { ExtensionsStore, ExtensionsStoreType } from "./extensions-store";
+import { getInjectable, lifecycleEnum } from "@ogre-tools/injectable";
+import { ExtensionsStore } from "./extensions-store";
 
-const extensionsStoreInjectable: Injectable<ExtensionsStoreType> = {
-  getDependencies: () => ({}),
+const extensionsStoreInjectable = getInjectable({
   instantiate: () => ExtensionsStore.createInstance(),
   lifecycle: lifecycleEnum.singleton,
-};
+});
 
 export default extensionsStoreInjectable;

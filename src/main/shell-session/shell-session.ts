@@ -19,7 +19,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { Cluster } from "../cluster";
+import type { Cluster } from "../cluster/cluster";
 import { Kubectl } from "../kubectl";
 import type WebSocket from "ws";
 import { shellEnv } from "../utils/shell-env";

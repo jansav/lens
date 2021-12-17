@@ -20,14 +20,19 @@
  */
 
 import type { KubeConfig } from "@kubernetes/client-node";
-import type { Cluster } from "./cluster";
-import type { ContextHandler } from "./context-handler";
+import type { Cluster } from "../cluster/cluster";
+import type { ContextHandler } from "../context-handler";
 import path from "path";
 import fs from "fs-extra";
-import { dumpConfigYaml } from "../common/kube-helpers";
-import logger from "./logger";
-import { LensProxy } from "./lens-proxy";
-import { AppPaths } from "../common/app-paths";
+import { dumpConfigYaml } from "../../common/kube-helpers";
+import logger from "../logger";
+import { LensProxy } from "../lens-proxy";
+
+interface Dependencies {
+  cluster: Cluster;
+  contextHandler: ContextHandler;
+  directoryForTemp: string
+}
 
 export class KubeconfigManager {
   /**
@@ -39,7 +44,7 @@ export class KubeconfigManager {
    */
   protected tempFilePath: string | null | undefined = null;
 
-  constructor(protected cluster: Cluster, protected contextHandler: ContextHandler) { }
+  constructor(private dependencies: Dependencies) {}
 
   /**
    *
@@ -80,7 +85,7 @@ export class KubeconfigManager {
 
   protected async ensureFile() {
     try {
-      await this.contextHandler.ensureServer();
+      await this.dependencies.contextHandler.ensureServer();
       this.tempFilePath = await this.createProxyKubeconfig();
     } catch (error) {
       throw Object.assign(new Error("Failed to creat temp config for auth-proxy"), { cause: error });
@@ -88,7 +93,7 @@ export class KubeconfigManager {
   }
 
   get resolveProxyUrl() {
-    return `http://127.0.0.1:${LensProxy.getInstance().port}/${this.cluster.id}`;
+    return `http://127.0.0.1:${LensProxy.getInstance().port}/${this.dependencies.cluster.id}`;
   }
 
   /**
@@ -96,15 +101,15 @@ export class KubeconfigManager {
    * This way any user of the config does not need to know anything about the auth etc. details.
    */
   protected async createProxyKubeconfig(): Promise<string> {
-    const { cluster } = this;
-    const { contextName, id } = cluster;
-    const tempFile = path.join(AppPaths.get("temp"), `kubeconfig-${id}`);
+    const cluster = this.dependencies.cluster;
+
+    const tempFile = path.join(this.dependencies.directoryForTemp, `kubeconfig-${cluster.id}`);
     const kubeConfig = await cluster.getKubeconfig();
     const proxyConfig: Partial<KubeConfig> = {
-      currentContext: contextName,
+      currentContext: cluster.contextName,
       clusters: [
         {
-          name: contextName,
+          name: cluster.contextName,
           server: this.resolveProxyUrl,
           skipTLSVerify: undefined,
         },
@@ -115,9 +120,9 @@ export class KubeconfigManager {
       contexts: [
         {
           user: "proxy",
-          name: contextName,
-          cluster: contextName,
-          namespace: cluster.defaultNamespace || kubeConfig.getContextObject(contextName).namespace,
+          name: cluster.contextName,
+          cluster: cluster.contextName,
+          namespace: cluster.defaultNamespace || kubeConfig.getContextObject(cluster.contextName).namespace,
         },
       ],
     };
@@ -126,7 +131,7 @@ export class KubeconfigManager {
 
     await fs.ensureDir(path.dirname(tempFile));
     await fs.writeFile(tempFile, configYaml, { mode: 0o600 });
-    logger.debug(`[KUBECONFIG-MANAGER]: Created temp kubeconfig "${contextName}" at "${tempFile}": \n${configYaml}`);
+    logger.debug(`[KUBECONFIG-MANAGER]: Created temp kubeconfig "${cluster.contextName}" at "${tempFile}": \n${configYaml}`);
 
     return tempFile;
   }

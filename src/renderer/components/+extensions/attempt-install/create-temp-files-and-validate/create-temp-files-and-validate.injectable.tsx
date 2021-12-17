@@ -18,27 +18,17 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import type { Injectable } from "@ogre-tools/injectable";
-import { lifecycleEnum } from "@ogre-tools/injectable";
-import {
-  createTempFilesAndValidate,
-  Dependencies,
-  InstallRequestValidated,
-} from "./create-temp-files-and-validate";
-import extensionDiscoveryInjectable
-  from "../../../../../extensions/extension-discovery/extension-discovery.injectable";
-import type { InstallRequest } from "../install-request";
+import { getInjectable, lifecycleEnum } from "@ogre-tools/injectable";
+import { createTempFilesAndValidate } from "./create-temp-files-and-validate";
+import extensionDiscoveryInjectable from "../../../../../extensions/extension-discovery/extension-discovery.injectable";
 
-const createTempFilesAndValidateInjectable: Injectable<
-  (installRequest: InstallRequest) => Promise<InstallRequestValidated | null>,
-  Dependencies
-> = {
-  getDependencies: di => ({
-    extensionDiscovery: di.inject(extensionDiscoveryInjectable),
-  }),
+const createTempFilesAndValidateInjectable = getInjectable({
+  instantiate: async (di) =>
+    createTempFilesAndValidate({
+      extensionDiscovery: await di.inject(extensionDiscoveryInjectable),
+    }),
 
-  instantiate: createTempFilesAndValidate,
   lifecycle: lifecycleEnum.singleton,
-};
+});
 
 export default createTempFilesAndValidateInjectable;

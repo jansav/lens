@@ -28,7 +28,7 @@ import { when } from "mobx";
 import { getMessageFromError } from "../get-message-from-error/get-message-from-error";
 import type { ExtensionInstallationStateStore } from "../../../../extensions/extension-installation-state-store/extension-installation-state-store";
 
-export interface Dependencies {
+interface Dependencies {
   extensionLoader: ExtensionLoader
   extensionDiscovery: ExtensionDiscovery
   extensionInstallationStateStore: ExtensionInstallationStateStore

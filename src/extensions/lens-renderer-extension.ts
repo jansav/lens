@@ -20,7 +20,7 @@
  */
 
 import type * as registries from "./registries";
-import type { Cluster } from "../main/cluster";
+import type { Cluster } from "../main/cluster/cluster";
 import { Disposers, LensExtension } from "./lens-extension";
 import { getExtensionPageUrl } from "./registries/page-registry";
 import type { CatalogEntity } from "../common/catalog";

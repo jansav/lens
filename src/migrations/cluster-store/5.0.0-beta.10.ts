@@ -23,7 +23,7 @@ import path from "path";
 import fse from "fs-extra";
 import type { ClusterModel } from "../../common/cluster-types";
 import type { MigrationDeclaration } from "../helpers";
-import { AppPaths } from "../../common/app-paths";
+import { AppPaths } from "../../common/app-paths/app-paths";
 
 interface Pre500WorkspaceStoreModel {
   workspaces: {

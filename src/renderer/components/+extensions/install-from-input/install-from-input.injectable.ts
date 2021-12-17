@@ -18,28 +18,24 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import type { Injectable } from "@ogre-tools/injectable";
-import { lifecycleEnum } from "@ogre-tools/injectable";
+import { getInjectable, lifecycleEnum } from "@ogre-tools/injectable";
 import attemptInstallInjectable from "../attempt-install/attempt-install.injectable";
-import type { Dependencies } from "./install-from-input";
 import { installFromInput } from "./install-from-input";
-import attemptInstallByInfoInjectable
-  from "../attempt-install-by-info/attempt-install-by-info.injectable";
-import extensionInstallationStateStoreInjectable
-  from "../../../../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
+import attemptInstallByInfoInjectable from "../attempt-install-by-info/attempt-install-by-info.injectable";
+import extensionInstallationStateStoreInjectable from "../../../../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
 
-const installFromInputInjectable: Injectable<
-  (input: string) => Promise<void>,
-  Dependencies
-> = {
-  getDependencies: di => ({
-    attemptInstall: di.inject(attemptInstallInjectable),
-    attemptInstallByInfo: di.inject(attemptInstallByInfoInjectable),
-    extensionInstallationStateStore: di.inject(extensionInstallationStateStoreInjectable),
-  }),
+const installFromInputInjectable = getInjectable({
+  instantiate: async (di) =>
+    installFromInput({
+      attemptInstall: await di.inject(attemptInstallInjectable),
+      attemptInstallByInfo: await di.inject(attemptInstallByInfoInjectable),
 
-  instantiate: installFromInput,
+      extensionInstallationStateStore: di.inject(
+        extensionInstallationStateStoreInjectable,
+      ),
+    }),
+
   lifecycle: lifecycleEnum.singleton,
-};
+});
 
 export default installFromInputInjectable;

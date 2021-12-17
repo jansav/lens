@@ -19,7 +19,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import type { Cluster } from "../../main/cluster";
+import type { Cluster } from "../../main/cluster/cluster";
 import { namespaceStore } from "./+namespaces/namespace.store";
 import type { ClusterContext } from "../../common/k8s-api/cluster-context";
 import { computed, makeObservable } from "mobx";

@@ -46,7 +46,7 @@ import { IpcRendererNavigationEvents } from "../renderer/navigation/events";
 import { pushCatalogToRenderer } from "./catalog-pusher";
 import { catalogEntityRegistry } from "./catalog";
 import { HelmRepoManager } from "./helm/helm-repo-manager";
-import { syncGeneralEntities, syncWeblinks, KubeconfigSyncManager } from "./catalog-sources";
+import { syncGeneralEntities, syncWeblinks } from "./catalog-sources";
 import configurePackages from "../common/configure-packages";
 import { PrometheusProviderRegistry } from "./prometheus";
 import * as initializers from "./initializers";
@@ -61,7 +61,7 @@ import { Router } from "./router";
 import { initMenu } from "./menu/menu";
 import { initTray } from "./tray";
 import { kubeApiRequest, shellApiRequest, ShellRequestAuthenticator } from "./proxy-functions";
-import { AppPaths } from "../common/app-paths";
+import { AppPaths } from "../common/app-paths/app-paths";
 import { ShellSession } from "./shell-session/shell-session";
 import { getDi } from "./getDi";
 import electronMenuItemsInjectable from "./menu/electron-menu-items.injectable";
@@ -69,6 +69,11 @@ import extensionLoaderInjectable from "../extensions/extension-loader/extension-
 import lensProtocolRouterMainInjectable from "./protocol-handler/lens-protocol-router-main/lens-protocol-router-main.injectable";
 import extensionDiscoveryInjectable
   from "../extensions/extension-discovery/extension-discovery.injectable";
+import directoryForUserDataInjectable
+  from "../common/app-paths/directory-for-user-data/directory-for-user-data.injectable";
+import clusterInjectable from "./cluster/cluster.injectable";
+import kubeconfigSyncManagerInjectable
+  from "./catalog-sources/kubeconfig-sync-manager/kubeconfig-sync-manager.injectable";
 
 const di = getDi();
 
@@ -88,8 +93,6 @@ if (app.setAsDefaultProtocolClient("lens")) {
   logger.info("📟 Protocol client register failed ❗");
 }
 
-AppPaths.init();
-
 if (process.env.LENS_DISABLE_GPU) {
   app.disableHardwareAcceleration();
 }
@@ -105,8 +108,9 @@ mangleProxyEnv();
 logger.debug("[APP-MAIN] initializing ipc main handlers");
 
 const menuItems = di.inject(electronMenuItemsInjectable);
+const directoryForUserData = await di.inject(directoryForUserDataInjectable);
 
-initializers.initIpcMainHandlers(menuItems);
+initializers.initIpcMainHandlers(menuItems, directoryForUserData);
 
 if (app.commandLine.getSwitchValue("proxy-server") !== "") {
   process.env.HTTPS_PROXY = app.commandLine.getSwitchValue("proxy-server");
@@ -165,7 +169,12 @@ app.on("ready", async () => {
   UserStore.createInstance().startMainReactions();
 
   // ClusterStore depends on: UserStore
-  ClusterStore.createInstance().provideInitialFromMain();
+  const clusterStore = ClusterStore.createInstance({
+    createCluster: (instantiationParameter) =>
+      di.inject(clusterInjectable, instantiationParameter),
+  });
+
+  clusterStore.provideInitialFromMain();
 
   // HotbarStore depends on: ClusterStore
   HotbarStore.createInstance();
@@ -184,8 +193,9 @@ app.on("ready", async () => {
   });
 
   ClusterManager.createInstance().init();
-  KubeconfigSyncManager.createInstance();
 
+  di.inject(kubeconfigSyncManagerInjectable);
+  
   initializers.initClusterMetadataDetectors();
 
   try {
@@ -231,7 +241,7 @@ app.on("ready", async () => {
 
   extensionLoader.init();
 
-  const extensionDiscovery = di.inject(extensionDiscoveryInjectable);
+  const extensionDiscovery = await di.inject(extensionDiscoveryInjectable);
 
   extensionDiscovery.init();
 
@@ -257,7 +267,11 @@ app.on("ready", async () => {
   ipcMainOn(IpcRendererNavigationEvents.LOADED, async () => {
     onCloseCleanup.push(pushCatalogToRenderer(catalogEntityRegistry));
     await ensureDir(storedKubeConfigFolder());
-    KubeconfigSyncManager.getInstance().startSync();
+
+    const kubeConfigSyncManager = di.inject(kubeconfigSyncManagerInjectable);
+
+    kubeConfigSyncManager.startSync();
+
     startUpdateChecking();
     lensProtocolRouterMain.rendererLoaded = true;
   });
@@ -319,7 +333,11 @@ app.on("will-quit", (event) => {
   logger.info("APP:QUIT");
   appEventBus.emit({ name: "app", action: "close" });
   ClusterManager.getInstance(false)?.stop(); // close cluster connections
-  KubeconfigSyncManager.getInstance(false)?.stopSync();
+
+  const kubeConfigSyncManager = di.inject(kubeconfigSyncManagerInjectable);
+
+  kubeConfigSyncManager.stopSync();
+
   onCloseCleanup();
 
   // This is set to false here so that LPRM can wait to send future lens://

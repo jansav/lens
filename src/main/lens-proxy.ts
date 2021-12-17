@@ -28,7 +28,7 @@ import type { Router } from "./router";
 import type { ContextHandler } from "./context-handler";
 import logger from "./logger";
 import { Singleton } from "../common/utils";
-import type { Cluster } from "./cluster";
+import type { Cluster } from "./cluster/cluster";
 import type { ProxyApiRequestArgs } from "./proxy-functions";
 import { appEventBus } from "../common/event-bus";
 import { getBoolean } from "./utils/parse-query";

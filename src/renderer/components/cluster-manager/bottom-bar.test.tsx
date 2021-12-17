@@ -26,7 +26,6 @@ import "@testing-library/jest-dom/extend-expect";
 import { BottomBar } from "./bottom-bar";
 import { StatusBarRegistry } from "../../../extensions/registries";
 import { HotbarStore } from "../../../common/hotbar-store";
-import { AppPaths } from "../../../common/app-paths";
 import { CommandOverlay } from "../command-palette";
 import { HotbarSwitchCommand } from "../hotbar/hotbar-switch-command";
 import { ActiveHotbarName } from "./active-hotbar-name";
@@ -36,8 +35,6 @@ jest.mock("../command-palette", () => ({
     open: jest.fn(),
   },
 }));
-
-AppPaths.init();
 
 jest.mock("electron", () => ({
   app: {

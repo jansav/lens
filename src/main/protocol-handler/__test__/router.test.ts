@@ -28,7 +28,6 @@ import { LensExtension } from "../../../extensions/main-api";
 import { ExtensionsStore } from "../../../extensions/extensions-store/extensions-store";
 import type { LensProtocolRouterMain } from "../lens-protocol-router-main/lens-protocol-router-main";
 import mockFs from "mock-fs";
-import { AppPaths } from "../../../common/app-paths";
 import { getDiForUnitTesting } from "../../getDiForUnitTesting";
 import extensionLoaderInjectable
   from "../../../extensions/extension-loader/extension-loader.injectable";
@@ -54,8 +53,6 @@ jest.mock("electron", () => ({
     handle: jest.fn(),
   },
 }));
-
-AppPaths.init();
 
 function throwIfDefined(val: any): void {
   if (val != null) {

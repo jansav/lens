@@ -29,7 +29,6 @@ import { noop } from "../../../utils";
 import { ThemeStore } from "../../../theme.store";
 import { TerminalStore } from "../terminal.store";
 import { UserStore } from "../../../../common/user-store";
-import { AppPaths } from "../../../../common/app-paths";
 
 jest.mock("electron", () => ({
   app: {
@@ -46,7 +45,6 @@ jest.mock("electron", () => ({
     handle: jest.fn(),
   },
 }));
-AppPaths.init();
 
 const initialTabs: DockTab[] = [
   { id: "terminal", kind: TabKind.TERMINAL, title: "Terminal", pinned: false },

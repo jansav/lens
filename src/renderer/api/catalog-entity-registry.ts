@@ -23,7 +23,7 @@ import { computed, observable, makeObservable, action } from "mobx";
 import { ipcRendererOn } from "../../common/ipc";
 import { CatalogCategory, CatalogEntity, CatalogEntityData, catalogCategoryRegistry, CatalogCategoryRegistry, CatalogEntityKindData } from "../../common/catalog";
 import "../../common/catalog-entities";
-import type { Cluster } from "../../main/cluster";
+import type { Cluster } from "../../main/cluster/cluster";
 import { ClusterStore } from "../../common/cluster-store";
 import { Disposer, iter } from "../utils";
 import { once } from "lodash";

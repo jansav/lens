@@ -18,17 +18,17 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import type { Injectable } from "@ogre-tools/injectable";
-import { lifecycleEnum } from "@ogre-tools/injectable";
-import {
-  ExtensionInstaller,
-  ExtensionInstallerType,
-} from "./extension-installer";
+import { getInjectable, lifecycleEnum } from "@ogre-tools/injectable";
+import { ExtensionInstaller } from "./extension-installer";
+import extensionPackagesRootInjectable
+  from "../extension-packages-root/extension-packages-root.injectable";
 
-const extensionInstallerInjectable: Injectable<ExtensionInstallerType> = {
-  getDependencies: () => ({}),
-  instantiate: () => new ExtensionInstaller(),
+const extensionInstallerInjectable = getInjectable({
+  instantiate: async (di) => new ExtensionInstaller({
+    extensionPackagesRoot: await di.inject(extensionPackagesRootInjectable),
+  }),
+
   lifecycle: lifecycleEnum.singleton,
-};
+});
 
 export default extensionInstallerInjectable;

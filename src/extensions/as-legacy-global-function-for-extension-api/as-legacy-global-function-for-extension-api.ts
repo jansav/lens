@@ -22,23 +22,33 @@ import type { Injectable } from "@ogre-tools/injectable";
 
 import { getLegacyGlobalDiForExtensionApi } from "./legacy-global-di-for-extension-api";
 
-type Awaited<TMaybePromise> = TMaybePromise extends PromiseLike<infer TValue>
-  ? TValue
-  : TMaybePromise;
+type InferFromInjectable<T> = T extends Injectable<
+  unknown,
+  infer TInstance,
+  infer TInstantiationParameter
+>
+  ? [TInstance, TInstantiationParameter]
+  : never;
 
-type FactoryType = <
-  TInjectable extends Injectable<TInstance, TDependencies>,
-  TInstance extends (...args: unknown[]) => any,
-  TDependencies extends object,
-  TFunction extends (...args: unknown[]) => any = Awaited<ReturnType<TInjectable["instantiate"]>>,
+export type TentativeTuple<T> = T extends object ? [T] : [undefined?];
+
+export function asLegacyGlobalFunctionForExtensionApi<
+  TInjectable extends Injectable<unknown, TInstance, TInstantiationParameter>,
+  TInstantiationParameter,
+  TInstance extends (
+    ...args: any[]
+  ) => ReturnType<
+    InferFromInjectable<TInjectable>[0]
+  > = InferFromInjectable<TInjectable>[0],
 >(
   injectableKey: TInjectable,
-) => (...args: Parameters<TFunction>) => ReturnType<TFunction>;
+  ...instantiationParameter: TentativeTuple<InferFromInjectable<TInjectable>[1]>
+) {
+  return (...args: Parameters<TInstance>) => {
+    const di = getLegacyGlobalDiForExtensionApi();
 
-export const asLegacyGlobalFunctionForExtensionApi: FactoryType =
-  injectableKey =>
-    (...args) => {
-      const injected = getLegacyGlobalDiForExtensionApi().inject(injectableKey);
+    const injected = di.inject(injectableKey, ...instantiationParameter);
 
-      return injected(...args);
-    };
+    return injected(...args);
+  };
+}

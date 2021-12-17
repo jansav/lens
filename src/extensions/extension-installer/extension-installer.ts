@@ -24,13 +24,11 @@ import child_process from "child_process";
 import fs from "fs-extra";
 import path from "path";
 import logger from "../../main/logger";
-import { extensionPackagesRoot } from "../extension-loader";
 import type { PackageJson } from "type-fest";
 
 const logModule = "[EXTENSION-INSTALLER]";
 
 export interface ExtensionInstallerType {
-  readonly extensionPackagesRoot: string;
   readonly npmPath: any;
 
   /**
@@ -49,15 +47,17 @@ export interface ExtensionInstallerType {
   npm(args: string[]): Promise<void>;
 }
 
+interface Dependencies {
+  extensionPackagesRoot: string
+}
+
 /**
  * Installs dependencies for extensions
  */
 export class ExtensionInstaller implements ExtensionInstallerType {
   private installLock = new AwaitLock();
 
-  get extensionPackagesRoot() {
-    return extensionPackagesRoot();
-  }
+  constructor(private dependencies: Dependencies) {}
 
   get npmPath() {
     return __non_webpack_require__.resolve("npm/bin/npm-cli");
@@ -84,7 +84,7 @@ export class ExtensionInstaller implements ExtensionInstallerType {
       );
 
       logger.info(
-        `${logModule} installing dependencies at ${extensionPackagesRoot()}`,
+        `${logModule} installing dependencies at ${this.dependencies.extensionPackagesRoot}`,
       );
       await this.npm([
         "install",
@@ -94,7 +94,7 @@ export class ExtensionInstaller implements ExtensionInstallerType {
         "--no-package-lock",
       ]);
       logger.info(
-        `${logModule} dependencies installed at ${extensionPackagesRoot()}`,
+        `${logModule} dependencies installed at ${this.dependencies.extensionPackagesRoot}`,
       );
     } finally {
       this.installLock.release();
@@ -110,7 +110,7 @@ export class ExtensionInstaller implements ExtensionInstallerType {
 
     try {
       logger.info(
-        `${logModule} installing package from ${name} to ${extensionPackagesRoot()}`,
+        `${logModule} installing package from ${name} to ${this.dependencies.extensionPackagesRoot}`,
       );
       await this.npm([
         "install",
@@ -122,7 +122,7 @@ export class ExtensionInstaller implements ExtensionInstallerType {
         name,
       ]);
       logger.info(
-        `${logModule} package ${name} installed to ${extensionPackagesRoot()}`,
+        `${logModule} package ${name} installed to ${this.dependencies.extensionPackagesRoot}`,
       );
     } finally {
       this.installLock.release();
@@ -132,7 +132,7 @@ export class ExtensionInstaller implements ExtensionInstallerType {
   npm(args: string[]): Promise<void> {
     return new Promise((resolve, reject) => {
       const child = child_process.fork(this.npmPath, args, {
-        cwd: extensionPackagesRoot(),
+        cwd: this.dependencies.extensionPackagesRoot,
         silent: true,
         env: {},
       });

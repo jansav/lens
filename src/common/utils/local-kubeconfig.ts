@@ -21,7 +21,7 @@
 
 import path from "path";
 import * as uuid from "uuid";
-import { AppPaths } from "../app-paths";
+import { AppPaths } from "../app-paths/app-paths";
 import type { ClusterId } from "../cluster-types";
 
 export function storedKubeConfigFolder(): string {

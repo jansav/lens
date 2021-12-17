@@ -18,18 +18,20 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import type { Injectable } from "@ogre-tools/injectable";
-import { lifecycleEnum } from "@ogre-tools/injectable";
-import { Dependencies, installFromSelectFileDialog } from "./install-from-select-file-dialog";
+import { getInjectable, lifecycleEnum } from "@ogre-tools/injectable";
+import { installFromSelectFileDialog } from "./install-from-select-file-dialog";
 import attemptInstallsInjectable from "../attempt-installs/attempt-installs.injectable";
+import directoryForDownloadsInjectable
+  from "../../../../common/app-paths/directory-for-downloads/directory-for-downloads.injectable";
 
-const installFromSelectFileDialogInjectable: Injectable<() => Promise<void>, Dependencies> = {
-  getDependencies: di => ({
-    attemptInstalls: di.inject(attemptInstallsInjectable),
-  }),
-  
-  instantiate: installFromSelectFileDialog,
+const installFromSelectFileDialogInjectable = getInjectable({
+  instantiate: async (di) =>
+    installFromSelectFileDialog({
+      attemptInstalls: await di.inject(attemptInstallsInjectable),
+      directoryForDownloads: await di.inject(directoryForDownloadsInjectable),
+    }),
+
   lifecycle: lifecycleEnum.singleton,
-};
+});
 
 export default installFromSelectFileDialogInjectable;

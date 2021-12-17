@@ -24,13 +24,12 @@ import mockFs from "mock-fs";
 import yaml from "js-yaml";
 import path from "path";
 import fse from "fs-extra";
-import { Cluster } from "../../main/cluster";
+import { Cluster } from "../../main/cluster/cluster";
 import { ClusterStore } from "../cluster-store";
 import { Console } from "console";
 import { stdout, stderr } from "process";
 import type { ClusterId } from "../cluster-types";
 import { getCustomKubeConfigPath } from "../utils";
-import { AppPaths } from "../app-paths";
 
 console = new Console(stdout, stderr);
 
@@ -86,8 +85,6 @@ jest.mock("electron", () => ({
     send: jest.fn(),
   },
 }));
-
-AppPaths.init();
 
 describe("empty config", () => {
   beforeEach(async () => {

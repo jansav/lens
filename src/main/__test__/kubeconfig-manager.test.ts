@@ -46,15 +46,14 @@ jest.mock("winston", () => ({
   },
 }));
 
-import { KubeconfigManager } from "../kubeconfig-manager";
+import { KubeconfigManager } from "../kubeconfig-manager/kubeconfig-manager";
 import mockFs from "mock-fs";
-import { Cluster } from "../cluster";
+import { Cluster } from "../cluster/cluster";
 import type { ContextHandler } from "../context-handler";
 import fse from "fs-extra";
 import { loadYaml } from "@kubernetes/client-node";
 import { Console } from "console";
 import * as path from "path";
-import { AppPaths } from "../../common/app-paths";
 
 jest.mock("electron", () => ({
   app: {
@@ -71,8 +70,6 @@ jest.mock("electron", () => ({
     handle: jest.fn(),
   },
 }));
-
-AppPaths.init();
 
 console = new Console(process.stdout, process.stderr); // fix mockFS
 

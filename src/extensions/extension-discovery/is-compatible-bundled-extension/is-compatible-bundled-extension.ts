@@ -22,7 +22,7 @@ import type { LensExtensionManifest } from "../../lens-extension";
 import { isProduction } from "../../../common/vars";
 import type { SemVer } from "semver";
 
-export interface Dependencies {
+interface Dependencies {
   appSemVer: SemVer;
 }
 

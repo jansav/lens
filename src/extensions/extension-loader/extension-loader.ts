@@ -24,7 +24,6 @@ import { EventEmitter } from "events";
 import { isEqual } from "lodash";
 import { action, computed, makeObservable, observable, observe, reaction, when } from "mobx";
 import path from "path";
-import { AppPaths } from "../../common/app-paths";
 import { ClusterStore } from "../../common/cluster-store";
 import { broadcastMessage, ipcMainOn, ipcRendererOn, requestMain, ipcMainHandle } from "../../common/ipc";
 import { Disposer, getHostedClusterId, toJS } from "../../common/utils";
@@ -35,13 +34,9 @@ import type { LensExtension, LensExtensionConstructor, LensExtensionId } from ".
 import type { LensRendererExtension } from "../lens-renderer-extension";
 import * as registries from "../registries";
 
-export function extensionPackagesRoot() {
-  return path.join(AppPaths.get("userData"));
-}
-
 const logModule = "[EXTENSIONS-LOADER]";
 
-export interface Dependencies {
+interface Dependencies {
   extensionsStore: ExtensionsStore
 }
 

@@ -25,7 +25,6 @@ import path from "path";
 import type { ExtensionDiscovery } from "./extension-discovery";
 import os from "os";
 import { Console } from "console";
-import { AppPaths } from "../../common/app-paths";
 import { getDiForUnitTesting } from "../getDiForUnitTesting";
 import extensionDiscoveryInjectable from "./extension-discovery.injectable";
 import extensionInstallerInjectable from "../extension-installer/extension-installer.injectable";
@@ -52,8 +51,6 @@ jest.mock("electron", () => ({
   },
 }));
 
-AppPaths.init();
-
 console = new Console(process.stdout, process.stderr); // fix mockFS
 const mockedWatch = watch as jest.MockedFunction<typeof watch>;
 
@@ -71,7 +68,8 @@ describe("ExtensionDiscovery", () => {
       installPackage: jest.fn(),
     };
 
-    di.override(extensionInstallerInjectable, extensionInstallerStub);
+    // @ts-ignore
+    di.override(extensionInstallerInjectable, () => extensionInstallerStub);
 
     extensionDiscovery = di.inject(extensionDiscoveryInjectable);
   });

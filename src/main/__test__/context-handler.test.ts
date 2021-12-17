@@ -23,7 +23,6 @@ import { UserStore } from "../../common/user-store";
 import { ContextHandler } from "../context-handler";
 import { PrometheusProvider, PrometheusProviderRegistry, PrometheusService } from "../prometheus";
 import mockFs from "mock-fs";
-import { AppPaths } from "../../common/app-paths";
 
 jest.mock("electron", () => ({
   app: {
@@ -85,8 +84,6 @@ function getHandler() {
     apiUrl: "http://localhost:81",
   }) as any);
 }
-
-AppPaths.init();
 
 describe("ContextHandler", () => {
   beforeEach(() => {

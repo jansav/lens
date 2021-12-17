@@ -52,7 +52,7 @@ function checkHost<Query>(url: URLParse<Query>): boolean {
   }
 }
 
-export interface Dependencies {
+interface Dependencies {
   extensionLoader: ExtensionLoader
   extensionsStore: ExtensionsStore
 }

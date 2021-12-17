@@ -32,7 +32,6 @@ import { getBundledKubectlVersion } from "../common/utils/app-version";
 import { isDevelopment, isWindows, isTestEnv } from "../common/vars";
 import { SemVer } from "semver";
 import { defaultPackageMirror, packageMirrors } from "../common/user-store/preferences-helpers";
-import { AppPaths } from "../common/app-paths";
 
 const bundledVersion = getBundledKubectlVersion();
 const kubectlMap: Map<string, string> = new Map([
@@ -73,6 +72,12 @@ export function bundledKubectlPath(): string {
   return bundledPath;
 }
 
+interface Dependencies {
+  clusterVersion: string,
+  kubectlDir: string
+  bundledKubectlVersion: string
+}
+
 export class Kubectl {
   public kubectlVersion: string;
   protected directory: string;
@@ -80,26 +85,26 @@ export class Kubectl {
   protected path: string;
   protected dirname: string;
 
-  static get kubectlDir() {
-    return path.join(AppPaths.get("userData"), "binaries", "kubectl");
-  }
+  // static get kubectlDir() {
+  //   return path.join(AppPaths.get("userData"), "binaries", "kubectl");
+  // }
 
-  public static readonly bundledKubectlVersion: string = bundledVersion;
-  public static invalidBundle = false;
-  private static bundledInstance: Kubectl;
+  // public static readonly bundledKubectlVersion: string = bundledVersion;
+  // public static invalidBundle = false;
+  // private static bundledInstance: Kubectl;
 
   // Returns the single bundled Kubectl instance
-  public static bundled() {
-    return Kubectl.bundledInstance ??= new Kubectl(Kubectl.bundledKubectlVersion);
-  }
+  // public static bundled() {
+  //   return Kubectl.bundledInstance ??= new Kubectl(Kubectl.bundledKubectlVersion);
+  // }
 
-  constructor(clusterVersion: string) {
+  constructor(private dependencies: Dependencies) {
     let version: SemVer;
 
     try {
-      version = new SemVer(clusterVersion, { includePrerelease: false });
+      version = new SemVer(dependencies.clusterVersion, { includePrerelease: false });
     } catch {
-      version = new SemVer(Kubectl.bundledKubectlVersion);
+      version = new SemVer(dependencies.bundledKubectlVersion);
     }
 
     const minorVersion = `${version.major}.${version.minor}`;
@@ -108,10 +113,10 @@ export class Kubectl {
        if the version map includes that, use that version, if not, fallback to the exact x.y.z of kube version */
     if (kubectlMap.has(minorVersion)) {
       this.kubectlVersion = kubectlMap.get(minorVersion);
-      logger.debug(`Set kubectl version ${this.kubectlVersion} for cluster version ${clusterVersion} using version map`);
+      logger.debug(`Set kubectl version ${this.kubectlVersion} for cluster version ${dependencies.clusterVersion} using version map`);
     } else {
       this.kubectlVersion = version.format();
-      logger.debug(`Set kubectl version ${this.kubectlVersion} for cluster version ${clusterVersion} using fallback`);
+      logger.debug(`Set kubectl version ${this.kubectlVersion} for cluster version ${dependencies.clusterVersion} using fallback`);
     }
 
     let arch = null;
@@ -146,7 +151,7 @@ export class Kubectl {
       return path.join(UserStore.getInstance().downloadBinariesPath, "kubectl");
     }
 
-    return Kubectl.kubectlDir;
+    return this.dependencies.kubectlDir;
   }
 
   public async getPath(bundled = false): Promise<string> {
@@ -160,7 +165,7 @@ export class Kubectl {
 
     // return binary name if bundled path is not functional
     if (!await this.checkBinary(this.getBundledPath(), false)) {
-      Kubectl.invalidBundle = true;
+      // Kubectl.invalidBundle = true;
 
       return path.basename(this.getBundledPath());
     }

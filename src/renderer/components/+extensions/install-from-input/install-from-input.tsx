@@ -30,7 +30,7 @@ import type { InstallRequest } from "../attempt-install/install-request";
 import type { ExtensionInfo } from "../attempt-install-by-info/attempt-install-by-info";
 import type { ExtensionInstallationStateStore } from "../../../../extensions/extension-installation-state-store/extension-installation-state-store";
 
-export interface Dependencies {
+interface Dependencies {
   attemptInstall: (request: InstallRequest, disposer?: ExtendableDisposer) => Promise<void>,
   attemptInstallByInfo: (extensionInfo: ExtensionInfo) => Promise<void>,
   extensionInstallationStateStore: ExtensionInstallationStateStore

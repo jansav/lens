@@ -23,7 +23,7 @@ import fse from "fs-extra";
 import { isNull } from "lodash";
 import path from "path";
 import * as uuid from "uuid";
-import { AppPaths } from "../../common/app-paths";
+import { AppPaths } from "../../common/app-paths/app-paths";
 import type { ClusterStoreModel } from "../../common/cluster-store";
 import { defaultHotbarCells, getEmptyHotbar, Hotbar, HotbarItem } from "../../common/hotbar-types";
 import { catalogEntity } from "../../main/catalog-sources/general";

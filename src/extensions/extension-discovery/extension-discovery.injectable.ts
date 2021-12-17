@@ -18,37 +18,40 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import type { Injectable } from "@ogre-tools/injectable";
-import { lifecycleEnum } from "@ogre-tools/injectable";
-import { Dependencies, ExtensionDiscovery } from "./extension-discovery";
+import { getInjectable, lifecycleEnum } from "@ogre-tools/injectable";
+import { ExtensionDiscovery } from "./extension-discovery";
 import extensionLoaderInjectable from "../extension-loader/extension-loader.injectable";
 import extensionInstallerInjectable from "../extension-installer/extension-installer.injectable";
 import isCompatibleExtensionInjectable from "./is-compatible-extension/is-compatible-extension.injectable";
 import isCompatibleBundledExtensionInjectable from "./is-compatible-bundled-extension/is-compatible-bundled-extension.injectable";
 import extensionsStoreInjectable from "../extensions-store/extensions-store.injectable";
-import extensionInstallationStateStoreInjectable
-  from "../extension-installation-state-store/extension-installation-state-store.injectable";
+import extensionInstallationStateStoreInjectable from "../extension-installation-state-store/extension-installation-state-store.injectable";
+import extensionPackagesRootInjectable
+  from "../extension-packages-root/extension-packages-root.injectable";
 
-const extensionDiscoveryInjectable: Injectable<
-  ExtensionDiscovery,
-  Dependencies
-> = {
-  getDependencies: di => ({
-    extensionLoader: di.inject(extensionLoaderInjectable),
-    extensionInstaller: di.inject(extensionInstallerInjectable),
-    extensionsStore: di.inject(extensionsStoreInjectable),
-    extensionInstallationStateStore: di.inject(extensionInstallationStateStoreInjectable),
+const extensionDiscoveryInjectable = getInjectable({
+  instantiate: async (di) =>
+    new ExtensionDiscovery({
+      extensionLoader: di.inject(extensionLoaderInjectable),
 
-    isCompatibleBundledExtension: di.inject(
-      isCompatibleBundledExtensionInjectable,
-    ),
+      extensionInstaller: await di.inject(extensionInstallerInjectable),
 
-    isCompatibleExtension: di.inject(isCompatibleExtensionInjectable),
-  }),
+      extensionsStore: di.inject(extensionsStoreInjectable),
 
-  instantiate: dependencies => new ExtensionDiscovery(dependencies),
+      extensionInstallationStateStore: di.inject(
+        extensionInstallationStateStoreInjectable,
+      ),
+
+      isCompatibleBundledExtension: di.inject(
+        isCompatibleBundledExtensionInjectable,
+      ),
+
+      isCompatibleExtension: di.inject(isCompatibleExtensionInjectable),
+
+      extensionPackagesRoot: await di.inject(extensionPackagesRootInjectable),
+    }),
 
   lifecycle: lifecycleEnum.singleton,
-};
+});
 
 export default extensionDiscoveryInjectable;

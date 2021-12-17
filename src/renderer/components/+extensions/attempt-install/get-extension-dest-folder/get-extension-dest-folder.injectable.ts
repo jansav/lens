@@ -18,22 +18,19 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import type { Injectable } from "@ogre-tools/injectable";
-import { lifecycleEnum } from "@ogre-tools/injectable";
+import { getInjectable, lifecycleEnum } from "@ogre-tools/injectable";
 
-import extensionDiscoveryInjectable
-  from "../../../../../extensions/extension-discovery/extension-discovery.injectable";
+import extensionDiscoveryInjectable from "../../../../../extensions/extension-discovery/extension-discovery.injectable";
 
-import type { Dependencies } from "./get-extension-dest-folder";
 import { getExtensionDestFolder } from "./get-extension-dest-folder";
 
-const getExtensionDestFolderInjectable: Injectable<(name: string) => string, Dependencies> = {
-  getDependencies: di => ({
-    extensionDiscovery: di.inject(extensionDiscoveryInjectable),
-  }),
+const getExtensionDestFolderInjectable = getInjectable({
+  instantiate: (di) =>
+    getExtensionDestFolder({
+      extensionDiscovery: di.inject(extensionDiscoveryInjectable),
+    }),
 
-  instantiate: getExtensionDestFolder,
   lifecycle: lifecycleEnum.singleton,
-};
+});
 
 export default getExtensionDestFolderInjectable;

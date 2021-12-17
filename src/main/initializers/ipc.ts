@@ -33,12 +33,12 @@ import { ResourceApplier } from "../resource-applier";
 import { IpcMainWindowEvents, WindowManager } from "../window-manager";
 import path from "path";
 import { remove } from "fs-extra";
-import { AppPaths } from "../../common/app-paths";
 import { getAppMenu } from "../menu/menu";
 import type { MenuRegistration } from "../menu/menu-registration";
 import type { IComputedValue } from "mobx";
 
-export function initIpcMainHandlers(electronMenuItems: IComputedValue<MenuRegistration[]>) {
+
+export function initIpcMainHandlers(electronMenuItems: IComputedValue<MenuRegistration[]>, directoryForUserData: string ) {
   ipcMainHandle(clusterActivateHandler, (event, clusterId: ClusterId, force = false) => {
     return ClusterStore.getInstance()
       .getById(clusterId)
@@ -94,7 +94,7 @@ export function initIpcMainHandlers(electronMenuItems: IComputedValue<MenuRegist
 
     try {
       // remove the local storage file
-      const localStorageFilePath = path.resolve(AppPaths.get("userData"), "lens-local-storage", `${cluster.id}.json`);
+      const localStorageFilePath = path.resolve(directoryForUserData, "lens-local-storage", `${cluster.id}.json`);
 
       await remove(localStorageFilePath);
     } catch {}

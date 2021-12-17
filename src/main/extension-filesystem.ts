@@ -27,7 +27,7 @@ import path from "path";
 import { BaseStore } from "../common/base-store";
 import type { LensExtensionId } from "../extensions/lens-extension";
 import { toJS } from "../common/utils";
-import { AppPaths } from "../common/app-paths";
+import { AppPaths } from "../common/app-paths/app-paths";
 
 interface FSProvisionModel {
   extensions: Record<string, string>; // extension names to paths

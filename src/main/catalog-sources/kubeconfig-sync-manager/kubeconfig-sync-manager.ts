@@ -20,25 +20,26 @@
  */
 
 import { action, observable, IComputedValue, computed, ObservableMap, runInAction, makeObservable, observe } from "mobx";
-import type { CatalogEntity } from "../../common/catalog";
-import { catalogEntityRegistry } from "../../main/catalog";
+import type { CatalogEntity } from "../../../common/catalog";
+import { catalogEntityRegistry } from "../../catalog";
 import { FSWatcher, watch } from "chokidar";
 import fs from "fs";
 import path from "path";
 import type stream from "stream";
-import { bytesToUnits, Disposer, ExtendedObservableMap, iter, noop, Singleton, storedKubeConfigFolder } from "../../common/utils";
-import logger from "../logger";
+import { bytesToUnits, Disposer, ExtendedObservableMap, iter, noop, storedKubeConfigFolder } from "../../../common/utils";
+import logger from "../../logger";
 import type { KubeConfig } from "@kubernetes/client-node";
-import { loadConfigFromString, splitConfig } from "../../common/kube-helpers";
-import { Cluster } from "../cluster";
-import { catalogEntityFromCluster, ClusterManager } from "../cluster-manager";
-import { UserStore } from "../../common/user-store";
-import { ClusterStore } from "../../common/cluster-store";
+import { loadConfigFromString, splitConfig } from "../../../common/kube-helpers";
+import type { Cluster } from "../../cluster/cluster";
+import { catalogEntityFromCluster, ClusterManager } from "../../cluster-manager";
+import { UserStore } from "../../../common/user-store";
+import { ClusterStore } from "../../../common/cluster-store";
 import { createHash } from "crypto";
 import { homedir } from "os";
 import globToRegExp from "glob-to-regexp";
 import { inspect } from "util";
-import type { UpdateClusterModel } from "../../common/cluster-types";
+import type { UpdateClusterModel } from "../../../common/cluster-types";
+import type { ClusterInstantiationParameter } from "../../cluster/cluster.injectable";
 
 const logPrefix = "[KUBECONFIG-SYNC]:";
 
@@ -63,16 +64,18 @@ const ignoreGlobs = [
 const folderSyncMaxAllowedFileReadSize = 2 * 1024 * 1024; // 2 MiB
 const fileSyncMaxAllowedFileReadSize = 16 * folderSyncMaxAllowedFileReadSize; // 32 MiB
 
-export class KubeconfigSyncManager extends Singleton {
+const syncName = "lens:kube-sync";
+
+interface Dependencies {
+  createCluster: (instantiationParameter: ClusterInstantiationParameter) => Cluster
+}
+
+export class KubeconfigSyncManager {
   protected sources = observable.map<string, [IComputedValue<CatalogEntity[]>, Disposer]>();
   protected syncing = false;
   protected syncListDisposer?: Disposer;
 
-  protected static readonly syncName = "lens:kube-sync";
-
-  constructor() {
-    super();
-
+  constructor(private dependencies: Dependencies) {
     makeObservable(this);
   }
 
@@ -86,7 +89,7 @@ export class KubeconfigSyncManager extends Singleton {
 
     logger.info(`${logPrefix} starting requested syncs`);
 
-    catalogEntityRegistry.addComputedSource(KubeconfigSyncManager.syncName, computed(() => (
+    catalogEntityRegistry.addComputedSource(syncName, computed(() => (
       Array.from(iter.flatMap(
         this.sources.values(),
         ([entities]) => entities.get(),
@@ -120,7 +123,7 @@ export class KubeconfigSyncManager extends Singleton {
       this.stopOldSync(filePath);
     }
 
-    catalogEntityRegistry.removeSource(KubeconfigSyncManager.syncName);
+    catalogEntityRegistry.removeSource(syncName);
     this.syncing = false;
   }
 
@@ -131,7 +134,7 @@ export class KubeconfigSyncManager extends Singleton {
       return void logger.debug(`${logPrefix} already syncing file/folder`, { filePath });
     }
 
-    this.sources.set(filePath, watchFileChanges(filePath));
+    this.sources.set(filePath, watchFileChanges(filePath, this.dependencies));
     logger.info(`${logPrefix} starting sync of file/folder`, { filePath });
     logger.debug(`${logPrefix} ${this.sources.size} files/folders watched`, { files: Array.from(this.sources.keys()) });
   }
@@ -170,7 +173,7 @@ type RootSourceValue = [Cluster, CatalogEntity];
 type RootSource = ObservableMap<string, RootSourceValue>;
 
 // exported for testing
-export function computeDiff(contents: string, source: RootSource, filePath: string): void {
+export function computeDiff(contents: string, source: RootSource, filePath: string, dependencies: Dependencies): void {
   runInAction(() => {
     try {
       const { config, error } = loadConfigFromString(contents);
@@ -212,7 +215,10 @@ export function computeDiff(contents: string, source: RootSource, filePath: stri
         // add new clusters to the source
         try {
           const clusterId = createHash("md5").update(`${filePath}:${contextName}`).digest("hex");
-          const cluster = ClusterStore.getInstance().getById(clusterId) || new Cluster({ ...model, id: clusterId });
+
+          const cluster =
+            ClusterStore.getInstance().getById(clusterId) ||
+            dependencies.createCluster({ model: { ...model, id: clusterId }});
 
           if (!cluster.apiUrl) {
             throw new Error("Cluster constructor failed, see above error");
@@ -244,7 +250,7 @@ interface DiffChangedConfigArgs {
   maxAllowedFileReadSize: number;
 }
 
-function diffChangedConfig({ filePath, source, stats, maxAllowedFileReadSize }: DiffChangedConfigArgs): Disposer {
+function diffChangedConfig({ filePath, source, stats, maxAllowedFileReadSize }: DiffChangedConfigArgs, dependencies: Dependencies): Disposer {
   logger.debug(`${logPrefix} file changed`, { filePath });
 
   if (stats.size >= maxAllowedFileReadSize) {
@@ -293,14 +299,14 @@ function diffChangedConfig({ filePath, source, stats, maxAllowedFileReadSize }: 
     })
     .on("end", () => {
       if (!closed) {
-        computeDiff(fileString, source, filePath);
+        computeDiff(fileString, source, filePath, dependencies);
       }
     });
 
   return cleanup;
 }
 
-function watchFileChanges(filePath: string): [IComputedValue<CatalogEntity[]>, Disposer] {
+function watchFileChanges(filePath: string, dependencies: Dependencies): [IComputedValue<CatalogEntity[]>, Disposer] {
   const rootSource = new ExtendedObservableMap<string, ObservableMap<string, RootSourceValue>>();
   const derivedSource = computed(() => Array.from(iter.flatMap(rootSource.values(), from => iter.map(from.values(), child => child[1]))));
 
@@ -343,7 +349,7 @@ function watchFileChanges(filePath: string): [IComputedValue<CatalogEntity[]>, D
             source: rootSource.getOrInsert(childFilePath, observable.map),
             stats,
             maxAllowedFileReadSize,
-          }));
+          }, dependencies));
         })
         .on("add", (childFilePath, stats) => {
           if (isFolderSync) {
@@ -361,7 +367,7 @@ function watchFileChanges(filePath: string): [IComputedValue<CatalogEntity[]>, D
             source: rootSource.getOrInsert(childFilePath, observable.map),
             stats,
             maxAllowedFileReadSize,
-          }));
+          }, dependencies));
         })
         .on("unlink", (childFilePath) => {
           cleanupFns.get(childFilePath)?.();

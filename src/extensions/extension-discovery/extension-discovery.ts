@@ -41,7 +41,7 @@ import type { LensExtensionId, LensExtensionManifest } from "../lens-extension";
 import { isProduction } from "../../common/vars";
 import type { ExtensionInstallationStateStore } from "../extension-installation-state-store/extension-installation-state-store";
 
-export interface Dependencies {
+interface Dependencies {
   extensionLoader: ExtensionLoader;
 
   extensionInstaller: ExtensionInstaller;
@@ -51,6 +51,8 @@ export interface Dependencies {
 
   isCompatibleBundledExtension: (manifest: LensExtensionManifest) => boolean;
   isCompatibleExtension: (manifest: LensExtensionManifest) => boolean;
+
+  extensionPackagesRoot: string;
 }
 
 export interface InstalledExtension {
@@ -115,7 +117,7 @@ export class ExtensionDiscovery {
 
   public events = new EventEmitter();
 
-  constructor(protected dependencies : Dependencies) {
+  constructor(protected dependencies: Dependencies) {
     makeObservable(this);
   }
 
@@ -124,11 +126,11 @@ export class ExtensionDiscovery {
   }
 
   get packageJsonPath(): string {
-    return path.join(this.dependencies.extensionInstaller.extensionPackagesRoot, manifestFilename);
+    return path.join(this.dependencies.extensionPackagesRoot, manifestFilename);
   }
 
   get inTreeTargetPath(): string {
-    return path.join(this.dependencies.extensionInstaller.extensionPackagesRoot, "extensions");
+    return path.join(this.dependencies.extensionPackagesRoot, "extensions");
   }
 
   get inTreeFolderPath(): string {
@@ -136,7 +138,7 @@ export class ExtensionDiscovery {
   }
 
   get nodeModulesPath(): string {
-    return path.join(this.dependencies.extensionInstaller.extensionPackagesRoot, "node_modules");
+    return path.join(this.dependencies.extensionPackagesRoot, "node_modules");
   }
 
   /**
@@ -291,7 +293,9 @@ export class ExtensionDiscovery {
    * @param extensionId The ID of the extension to uninstall.
    */
   async uninstallExtension(extensionId: LensExtensionId): Promise<void> {
-    const { manifest, absolutePath } = this.extensions.get(extensionId) ?? this.dependencies.extensionLoader.getExtension(extensionId);
+    const { manifest, absolutePath } =
+      this.extensions.get(extensionId) ??
+      this.dependencies.extensionLoader.getExtension(extensionId);
 
     logger.info(`${logModule} Uninstalling ${manifest.name}`);
 
@@ -310,7 +314,7 @@ export class ExtensionDiscovery {
     this.loadStarted = true;
 
     const extensionPackagesRoot =
-      this.dependencies.extensionInstaller.extensionPackagesRoot;
+      this.dependencies.extensionPackagesRoot;
 
     logger.info(
       `${logModule} loading extensions from ${extensionPackagesRoot}`,

@@ -22,13 +22,14 @@
 import { ipcMain, ipcRenderer, webFrame } from "electron";
 import { action, comparer, computed, makeObservable, observable, reaction } from "mobx";
 import { BaseStore } from "./base-store";
-import { Cluster } from "../main/cluster";
+import { Cluster } from "../main/cluster/cluster";
 import migrations from "../migrations/cluster-store";
 import logger from "../main/logger";
 import { appEventBus } from "./event-bus";
 import { ipcMainHandle, requestMain } from "./ipc";
 import { disposer, toJS } from "./utils";
 import type { ClusterModel, ClusterId, ClusterState } from "./cluster-types";
+import type { ClusterInstantiationParameter } from "../main/cluster/cluster.injectable";
 
 export interface ClusterStoreModel {
   clusters?: ClusterModel[];
@@ -36,13 +37,17 @@ export interface ClusterStoreModel {
 
 const initialStates = "cluster:states";
 
+interface Dependencies {
+  createCluster: (instantiationParameter: ClusterInstantiationParameter) => Cluster
+}
+
 export class ClusterStore extends BaseStore<ClusterStoreModel> {
   readonly displayName = "ClusterStore";
   clusters = observable.map<ClusterId, Cluster>();
 
   protected disposer = disposer();
 
-  constructor() {
+  constructor(private dependencies: Dependencies) {
     super({
       configName: "lens-cluster-store",
       accessPropertiesByDotNotation: false, // To make dots safe in cluster context names
@@ -123,7 +128,7 @@ export class ClusterStore extends BaseStore<ClusterStoreModel> {
 
     const cluster = clusterOrModel instanceof Cluster
       ? clusterOrModel
-      : new Cluster(clusterOrModel);
+      : this.dependencies.createCluster({ model: clusterOrModel });
 
     this.clusters.set(cluster.id, cluster);
 
@@ -143,7 +148,7 @@ export class ClusterStore extends BaseStore<ClusterStoreModel> {
         if (cluster) {
           cluster.updateModel(clusterModel);
         } else {
-          cluster = new Cluster(clusterModel);
+          cluster = this.dependencies.createCluster({ model: clusterModel });
         }
         newClusters.set(clusterModel.id, cluster);
       } catch (error) {

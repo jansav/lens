@@ -51,7 +51,7 @@ jest.mock("request-promise-native");
 
 import { Console } from "console";
 import mockFs from "mock-fs";
-import { Cluster } from "../cluster";
+import { Cluster } from "../cluster/cluster";
 import { Kubectl } from "../kubectl";
 
 console = new Console(process.stdout, process.stderr); // fix mockFS

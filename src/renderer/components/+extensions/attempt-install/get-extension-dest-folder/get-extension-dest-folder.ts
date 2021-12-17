@@ -22,7 +22,7 @@ import type { ExtensionDiscovery } from "../../../../../extensions/extension-dis
 import { sanitizeExtensionName } from "../../../../../extensions/lens-extension";
 import path from "path";
 
-export interface Dependencies {
+interface Dependencies {
   extensionDiscovery: ExtensionDiscovery;
 }
 

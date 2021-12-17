@@ -22,17 +22,30 @@
 import React, { useState } from "react";
 import { Input, InputValidators } from "../input";
 import { SubTitle } from "../layout/sub-title";
-import { getDefaultKubectlDownloadPath, UserStore } from "../../../common/user-store";
+import { UserStore } from "../../../common/user-store";
 import { observer } from "mobx-react";
 import { bundledKubectlPath } from "../../../main/kubectl";
 import { SelectOption, Select } from "../select";
 import { FormSwitch, Switcher } from "../switch";
 import { packageMirrors } from "../../../common/user-store/preferences-helpers";
+import { withInjectables } from "@ogre-tools/injectable-react";
+import defaultKubectlDownloadPathInjectable
+  from "./default-kubectl-download-path/default-kubectl-download-path.injectable";
 
-export const KubectlBinaries = observer(() => {
+interface Props {
+  dependencies: {
+    defaultKubectlDownloadPath: string
+  }
+}
+
+const NonInjectedKubectlBinaries = observer(({ dependencies }: Props) => {
   const userStore = UserStore.getInstance();
-  const [downloadPath, setDownloadPath] = useState(userStore.downloadBinariesPath || "");
-  const [binariesPath, setBinariesPath] = useState(userStore.kubectlBinariesPath || "");
+  const [downloadPath, setDownloadPath] = useState(
+    userStore.downloadBinariesPath || "",
+  );
+  const [binariesPath, setBinariesPath] = useState(
+    userStore.kubectlBinariesPath || "",
+  );
   const pathValidator = downloadPath ? InputValidators.isPath : undefined;
   const downloadMirrorOptions: SelectOption<string>[] = Array.from(
     packageMirrors.entries(),
@@ -47,12 +60,14 @@ export const KubectlBinaries = observer(() => {
   return (
     <>
       <section>
-        <SubTitle title="Kubectl binary download"/>
+        <SubTitle title="Kubectl binary download" />
         <FormSwitch
           control={
             <Switcher
               checked={userStore.downloadKubectlBinaries}
-              onChange={v => userStore.downloadKubectlBinaries = v.target.checked}
+              onChange={v =>
+                (userStore.downloadKubectlBinaries = v.target.checked)
+              }
               name="kubectl-download"
             />
           }
@@ -66,7 +81,9 @@ export const KubectlBinaries = observer(() => {
           placeholder="Download mirror for kubectl"
           options={downloadMirrorOptions}
           value={userStore.downloadMirror}
-          onChange={({ value }: SelectOption) => userStore.downloadMirror = value}
+          onChange={({ value }: SelectOption) =>
+            (userStore.downloadMirror = value)
+          }
           disabled={!userStore.downloadKubectlBinaries}
           isOptionDisabled={({ platforms }) => !platforms.has(process.platform)}
           themeName="lens"
@@ -78,15 +95,13 @@ export const KubectlBinaries = observer(() => {
         <Input
           theme="round-black"
           value={downloadPath}
-          placeholder={getDefaultKubectlDownloadPath()}
+          placeholder={dependencies.defaultKubectlDownloadPath}
           validators={pathValidator}
           onChange={setDownloadPath}
           onBlur={save}
           disabled={!userStore.downloadKubectlBinaries}
         />
-        <div className="hint">
-          The directory to download binaries into.
-        </div>
+        <div className="hint">The directory to download binaries into.</div>
       </section>
 
       <section>
@@ -103,4 +118,14 @@ export const KubectlBinaries = observer(() => {
       </section>
     </>
   );
+});
+
+export const KubectlBinaries = withInjectables(NonInjectedKubectlBinaries, {
+  getProps: (di, props) => ({
+    dependencies: {
+      defaultKubectlDownloadPath: di.inject(defaultKubectlDownloadPathInjectable),
+    },
+
+    ...props,
+  }),
 });

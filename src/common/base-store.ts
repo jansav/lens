@@ -30,7 +30,7 @@ import { broadcastMessage, ipcMainOn, ipcRendererOn } from "./ipc";
 import isEqual from "lodash/isEqual";
 import { isTestEnv } from "./vars";
 import { kebabCase } from "lodash";
-import { AppPaths } from "./app-paths";
+import { AppPaths } from "./app-paths/app-paths";
 
 export interface BaseStoreParams<T> extends ConfOptions<T> {
   syncOptions?: {

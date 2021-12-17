@@ -37,7 +37,7 @@ import {
   ExtensionInstallationStateStore,
 } from "../../../../extensions/extension-installation-state-store/extension-installation-state-store";
 
-export interface Dependencies {
+interface Dependencies {
   extensionLoader: ExtensionLoader;
   uninstallExtension: (id: LensExtensionId) => Promise<boolean>;
   

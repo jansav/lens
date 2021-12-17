@@ -31,7 +31,7 @@ import { when } from "mobx";
 import React from "react";
 import type { ExtensionInstallationStateStore } from "../../../../../extensions/extension-installation-state-store/extension-installation-state-store";
 
-export interface Dependencies {
+interface Dependencies {
   extensionLoader: ExtensionLoader
   getExtensionDestFolder: (name: string) => string
   extensionInstallationStateStore: ExtensionInstallationStateStore

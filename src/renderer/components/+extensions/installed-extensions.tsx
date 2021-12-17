@@ -33,12 +33,10 @@ import { cssNames } from "../../utils";
 import { observer } from "mobx-react";
 import type { Row } from "react-table";
 import type { LensExtensionId } from "../../../extensions/lens-extension";
-import extensionDiscoveryInjectable
-  from "../../../extensions/extension-discovery/extension-discovery.injectable";
+import extensionDiscoveryInjectable from "../../../extensions/extension-discovery/extension-discovery.injectable";
 
 import { withInjectables } from "@ogre-tools/injectable-react";
-import extensionInstallationStateStoreInjectable
-  from "../../../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
+import extensionInstallationStateStoreInjectable from "../../../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
 import type { ExtensionInstallationStateStore } from "../../../extensions/extension-installation-state-store/extension-installation-state-store";
 
 interface Props {
@@ -46,11 +44,11 @@ interface Props {
   enable: (id: LensExtensionId) => void;
   disable: (id: LensExtensionId) => void;
   uninstall: (extension: InstalledExtension) => void;
+}
 
-  dependencies: {
-    extensionDiscovery: ExtensionDiscovery,
-    extensionInstallationStateStore: ExtensionInstallationStateStore
-  }
+interface Dependencies {
+  extensionDiscovery: ExtensionDiscovery;
+  extensionInstallationStateStore: ExtensionInstallationStateStore;
 }
 
 function getStatus(extension: InstalledExtension) {
@@ -61,7 +59,14 @@ function getStatus(extension: InstalledExtension) {
   return extension.isEnabled ? "Enabled" : "Disabled";
 }
 
-const NonInjectedInstalledExtensions = observer(({ dependencies, extensions, uninstall, enable, disable }: Props) => {
+const NonInjectedInstalledExtensions: React.FC<Props & Dependencies> = ({
+  extensionDiscovery,
+  extensionInstallationStateStore,
+  extensions,
+  uninstall,
+  enable,
+  disable,
+}) => {
   const filters = [
     (extension: InstalledExtension) => extension.manifest.name,
     (extension: InstalledExtension) => getStatus(extension),
@@ -107,7 +112,7 @@ const NonInjectedInstalledExtensions = observer(({ dependencies, extensions, uni
       return extensions.map(extension => {
         const { id, isEnabled, isCompatible, manifest } = extension;
         const { name, description, version } = manifest;
-        const isUninstalling = dependencies.extensionInstallationStateStore.isExtensionUninstalling(id);
+        const isUninstalling = extensionInstallationStateStore.isExtensionUninstalling(id);
 
         return {
           extension: (
@@ -159,10 +164,10 @@ const NonInjectedInstalledExtensions = observer(({ dependencies, extensions, uni
           ),
         };
       });
-    }, [extensions, dependencies.extensionInstallationStateStore.anyUninstalling],
+    }, [extensions, extensionInstallationStateStore.anyUninstalling],
   );
 
-  if (!dependencies.extensionDiscovery.isLoaded) {
+  if (!extensionDiscovery.isLoaded) {
     return <div><Spinner center /></div>;
   }
 
@@ -189,16 +194,19 @@ const NonInjectedInstalledExtensions = observer(({ dependencies, extensions, uni
       />
     </section>
   );
-});
+};
 
-export const InstalledExtensions = withInjectables(
-  NonInjectedInstalledExtensions,
+export const InstalledExtensions = withInjectables<Dependencies, Props>(
+  observer(NonInjectedInstalledExtensions),
+  
   {
-    getProps: (di, props) => ({
-      dependencies: {
-        extensionDiscovery: di.inject(extensionDiscoveryInjectable),
-        extensionInstallationStateStore: di.inject(extensionInstallationStateStoreInjectable),
-      },
+    getPlaceholder: () => <div/>,
+
+    getProps: async (di, props) => ({
+      extensionDiscovery: await di.inject(extensionDiscoveryInjectable),
+      extensionInstallationStateStore: di.inject(
+        extensionInstallationStateStoreInjectable,
+      ),
 
       ...props,
     }),

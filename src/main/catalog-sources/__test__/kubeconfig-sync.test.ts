@@ -22,13 +22,12 @@
 import { ObservableMap } from "mobx";
 import type { CatalogEntity } from "../../../common/catalog";
 import { loadFromOptions } from "../../../common/kube-helpers";
-import type { Cluster } from "../../cluster";
-import { computeDiff, configToModels } from "../kubeconfig-sync";
+import type { Cluster } from "../../cluster/cluster";
+import { computeDiff, configToModels } from "../kubeconfig-sync/kubeconfig-sync";
 import mockFs from "mock-fs";
 import fs from "fs";
 import { ClusterStore } from "../../../common/cluster-store";
 import { ClusterManager } from "../../cluster-manager";
-import { AppPaths } from "../../../common/app-paths";
 
 jest.mock("electron", () => ({
   app: {
@@ -45,8 +44,6 @@ jest.mock("electron", () => ({
     handle: jest.fn(),
   },
 }));
-
-AppPaths.init();
 
 describe("kubeconfig-sync.source tests", () => {
   beforeEach(() => {

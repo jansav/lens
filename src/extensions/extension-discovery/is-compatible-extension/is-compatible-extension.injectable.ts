@@ -18,23 +18,13 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import type { Injectable } from "@ogre-tools/injectable";
-import { lifecycleEnum } from "@ogre-tools/injectable";
-import type { LensExtensionManifest } from "../../lens-extension";
+import { getInjectable, lifecycleEnum } from "@ogre-tools/injectable";
 import { appSemVer } from "../../../common/vars";
-import type { Dependencies } from "./is-compatible-extension";
 import { isCompatibleExtension } from "./is-compatible-extension";
 
-const isCompatibleExtensionInjectable: Injectable<
-  (manifest: LensExtensionManifest) => boolean,
-  Dependencies
-> = {
-  getDependencies: () => ({
-    appSemVer,
-  }),
-
-  instantiate: isCompatibleExtension,
+const isCompatibleExtensionInjectable = getInjectable({
+  instantiate: () => isCompatibleExtension({ appSemVer }),
   lifecycle: lifecycleEnum.singleton,
-};
+});
 
 export default isCompatibleExtensionInjectable;

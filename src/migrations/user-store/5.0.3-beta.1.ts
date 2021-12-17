@@ -26,7 +26,7 @@ import type { ClusterStoreModel } from "../../common/cluster-store";
 import type { KubeconfigSyncEntry, UserPreferencesModel } from "../../common/user-store";
 import { MigrationDeclaration, migrationLog } from "../helpers";
 import { isLogicalChildPath, storedKubeConfigFolder } from "../../common/utils";
-import { AppPaths } from "../../common/app-paths";
+import { AppPaths } from "../../common/app-paths/app-paths";
 
 export default {
   version: "5.0.3-beta.1",

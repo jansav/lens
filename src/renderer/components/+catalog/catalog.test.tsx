@@ -31,7 +31,6 @@ import { CatalogEntityRegistry } from "../../../renderer/api/catalog-entity-regi
 import { CatalogEntityDetailRegistry } from "../../../extensions/registries";
 import { CatalogEntityItem } from "./catalog-entity-item";
 import { CatalogEntityStore } from "./catalog-entity.store";
-import { AppPaths } from "../../../common/app-paths";
 
 mockWindow();
 jest.mock("electron", () => ({
@@ -49,8 +48,6 @@ jest.mock("electron", () => ({
     handle: jest.fn(),
   },
 }));
-
-AppPaths.init();
 
 jest.mock("./hotbar-toggle-menu-item", () => ({
   HotbarToggleMenuItem: () => <div>menu item</div>,

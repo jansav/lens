@@ -22,7 +22,7 @@
 import "../common/cluster-ipc";
 import type http from "http";
 import { action, makeObservable, observable, observe, reaction, toJS } from "mobx";
-import { Cluster } from "./cluster";
+import { Cluster } from "./cluster/cluster";
 import logger from "./logger";
 import { apiKubePrefix } from "../common/vars";
 import { getClusterIdFromHost, Singleton } from "../common/utils";

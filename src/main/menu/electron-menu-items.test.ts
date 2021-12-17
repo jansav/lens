@@ -39,7 +39,7 @@ describe("electron-menu-items", () => {
 
     di.override(
       extensionsInjectable,
-      computed(() => [...extensionsStub.values()]),
+      () => computed(() => [...extensionsStub.values()]),
     );
 
     electronMenuItems = di.inject(electronMenuItemsInjectable);

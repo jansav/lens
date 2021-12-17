@@ -22,7 +22,7 @@
 import { ChildProcess, spawn } from "child_process";
 import { waitUntilUsed } from "tcp-port-used";
 import { randomBytes } from "crypto";
-import type { Cluster } from "./cluster";
+import type { Cluster } from "./cluster/cluster";
 import { Kubectl } from "./kubectl";
 import logger from "./logger";
 import * as url from "url";

@@ -26,7 +26,7 @@ import { disposeOnUnmount, observer } from "mobx-react";
 import type { RouteComponentProps } from "react-router";
 import { ClusterStatus } from "./cluster-status";
 import { ClusterFrameHandler } from "./lens-views";
-import type { Cluster } from "../../../main/cluster";
+import type { Cluster } from "../../../main/cluster/cluster";
 import { ClusterStore } from "../../../common/cluster-store";
 import { requestMain } from "../../../common/ipc";
 import { clusterActivateHandler } from "../../../common/cluster-ipc";

@@ -24,7 +24,7 @@ import { MigrationDeclaration, migrationLog } from "../helpers";
 import { generateNewIdFor } from "../utils";
 import path from "path";
 import { moveSync, removeSync } from "fs-extra";
-import { AppPaths } from "../../common/app-paths";
+import { AppPaths } from "../../common/app-paths/app-paths";
 
 function mergePrometheusPreferences(left: ClusterPrometheusPreferences, right: ClusterPrometheusPreferences): ClusterPrometheusPreferences {
   if (left.prometheus && left.prometheusProvider) {

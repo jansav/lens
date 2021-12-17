@@ -26,7 +26,7 @@ import { isEqual, isPlainObject } from "lodash";
 import logger from "../../main/logger";
 import { getHostedClusterId } from "../../common/utils";
 import path from "path";
-import { AppPaths } from "../../common/app-paths";
+import { AppPaths } from "../../common/app-paths/app-paths";
 
 export interface StorageAdapter<T> {
   [metadata: string]: any;

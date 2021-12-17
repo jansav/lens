@@ -29,7 +29,6 @@ import { stderr, stdout } from "process";
 import { TerminalStore } from "../../../renderer/components/dock/terminal.store";
 import { ThemeStore } from "../../../renderer/theme.store";
 import { UserStore } from "../../../common/user-store";
-import { AppPaths } from "../../../common/app-paths";
 
 jest.mock("electron", () => ({
   app: {
@@ -46,8 +45,6 @@ jest.mock("electron", () => ({
     handle: jest.fn(),
   },
 }));
-
-AppPaths.init();
 
 console = new Console(stdout, stderr);
 

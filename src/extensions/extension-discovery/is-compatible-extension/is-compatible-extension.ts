@@ -21,7 +21,7 @@
 import semver, { SemVer } from "semver";
 import type { LensExtensionManifest } from "../../lens-extension";
 
-export interface Dependencies {
+interface Dependencies {
   appSemVer: SemVer;
 }
 

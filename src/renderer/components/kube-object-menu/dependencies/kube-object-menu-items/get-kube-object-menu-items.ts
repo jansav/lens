@@ -21,17 +21,13 @@
 import type { KubeObjectMenuRegistry } from "../../../../../extensions/registries";
 import type { KubeObject } from "../../../../../common/k8s-api/kube-object";
 
-export interface Dependencies {
+interface Dependencies {
   kubeObjectMenuRegistry: KubeObjectMenuRegistry;
-}
-
-export interface InstantiationParameter {
   kubeObject: KubeObject;
 }
 
 export const getKubeObjectMenuItems = (
-  { kubeObjectMenuRegistry }: Dependencies,
-  { kubeObject }: InstantiationParameter,
+  { kubeObjectMenuRegistry, kubeObject }: Dependencies,
 ) => {
   if (!kubeObject) {
     return [];

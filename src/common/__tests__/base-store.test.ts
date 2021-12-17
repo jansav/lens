@@ -20,12 +20,9 @@
  */
 
 import mockFs from "mock-fs";
-import { AppPaths } from "../app-paths";
 import { BaseStore } from "../base-store";
 import { action, comparer, makeObservable, observable, toJS } from "mobx";
 import { readFileSync } from "fs";
-
-AppPaths.init();
 
 jest.mock("electron", () => ({
   app: {

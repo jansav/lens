@@ -48,11 +48,10 @@ function verifyIpcArgs(args: unknown[]): args is [string, RouteAttempt] {
   }
 }
 
-export interface Dependencies {
+interface Dependencies {
   extensionLoader: ExtensionLoader
   extensionsStore: ExtensionsStore
 }
-
 
 export class LensProtocolRouterRenderer extends proto.LensProtocolRouter {
   constructor(protected dependencies: Dependencies) {

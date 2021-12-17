@@ -29,8 +29,7 @@ import { SubTitle } from "../layout/sub-title";
 import { TooltipPosition } from "../tooltip";
 import { observer } from "mobx-react";
 import type { ExtensionInstallationStateStore } from "../../../extensions/extension-installation-state-store/extension-installation-state-store";
-import extensionInstallationStateStoreInjectable
-  from "../../../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
+import extensionInstallationStateStoreInjectable from "../../../extensions/extension-installation-state-store/extension-installation-state-store.injectable";
 import { withInjectables } from "@ogre-tools/injectable-react";
 
 interface Props {
@@ -39,10 +38,10 @@ interface Props {
   onChange: (path: string) => void;
   installFromInput: () => void;
   installFromSelectFileDialog: () => void;
-  
-  dependencies: {
-    extensionInstallationStateStore: ExtensionInstallationStateStore
-  }
+}
+
+interface Dependencies {
+  extensionInstallationStateStore: ExtensionInstallationStateStore;
 }
 
 const installInputValidators = [
@@ -58,8 +57,8 @@ const installInputValidator: InputValidator = {
   ),
 };
 
-const NonInjectedInstall = observer((props: Props) => {
-  const { installPath, supportedFormats, onChange, installFromInput, installFromSelectFileDialog, dependencies } = props;
+const NonInjectedInstall : React.FC<Props & Dependencies> = (props) => {
+  const { installPath, supportedFormats, onChange, installFromInput, installFromSelectFileDialog, extensionInstallationStateStore } = props;
 
   return (
     <section className="mt-2">
@@ -69,7 +68,7 @@ const NonInjectedInstall = observer((props: Props) => {
           <Input
             className="box grow mr-6"
             theme="round-black"
-            disabled={dependencies.extensionInstallationStateStore.anyPreInstallingOrInstalling}
+            disabled={extensionInstallationStateStore.anyPreInstallingOrInstalling}
             placeholder={"Name or file path or URL"}
             showErrorsAsTooltip={{ preferredPositions: TooltipPosition.BOTTOM }}
             validators={installPath ? installInputValidator : undefined}
@@ -91,8 +90,8 @@ const NonInjectedInstall = observer((props: Props) => {
             primary
             label="Install"
             className="w-80 h-full"
-            disabled={dependencies.extensionInstallationStateStore.anyPreInstallingOrInstalling}
-            waiting={dependencies.extensionInstallationStateStore.anyPreInstallingOrInstalling}
+            disabled={extensionInstallationStateStore.anyPreInstallingOrInstalling}
+            waiting={extensionInstallationStateStore.anyPreInstallingOrInstalling}
             onClick={installFromInput}
           />
         </div>
@@ -102,16 +101,17 @@ const NonInjectedInstall = observer((props: Props) => {
       </small>
     </section>
   );
-});
+};
 
-export const Install = withInjectables(NonInjectedInstall, {
-  getProps: (di, props) => ({
-    dependencies: {
+export const Install = withInjectables<Dependencies, Props>(
+  observer(NonInjectedInstall),
+  {
+    getProps: (di, props) => ({
       extensionInstallationStateStore: di.inject(
         extensionInstallationStateStoreInjectable,
       ),
-    },
 
-    ...props,
-  }),
-});
+      ...props,
+    }),
+  },
+);

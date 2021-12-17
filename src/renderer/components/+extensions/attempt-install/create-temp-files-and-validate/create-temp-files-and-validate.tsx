@@ -41,7 +41,7 @@ export interface InstallRequestValidated {
   tempFile: string; // temp system path to packed extension for unpacking
 }
 
-export interface Dependencies {
+interface Dependencies {
   extensionDiscovery: ExtensionDiscovery
 }
 

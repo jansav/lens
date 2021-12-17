@@ -131,16 +131,18 @@ class NonInjectedExtensions extends React.Component<Props> {
 
 
 export const Extensions = withInjectables(NonInjectedExtensions, {
-  getProps: di => ({
+  getProps: async di => ({
     dependencies: {
       userExtensions: di.inject(userExtensionsInjectable),
       enableExtension: di.inject(enableExtensionInjectable),
       disableExtension: di.inject(disableExtensionInjectable),
       confirmUninstallExtension: di.inject(confirmUninstallExtensionInjectable),
-      installFromInput: di.inject(installFromInputInjectable),
+
+      installFromInput: await di.inject(installFromInputInjectable),
+
       installOnDrop: di.inject(installOnDropInjectable),
 
-      installFromSelectFileDialog: di.inject(
+      installFromSelectFileDialog: await di.inject(
         installFromSelectFileDialogInjectable,
       ),
 

@@ -37,7 +37,7 @@ import editResourceTabInjectable from "./dependencies/edit-resource-tab.injectab
 import { TabKind } from "../dock/dock.store";
 import kubeObjectMenuRegistryInjectable from "./dependencies/kube-object-menu-items/kube-object-menu-registry.injectable";
 import { DiRender, renderFor } from "../test-utils/renderFor";
-import type { Cluster } from "../../../main/cluster";
+import type { Cluster } from "../../../main/cluster/cluster";
 import type { ApiManager } from "../../../common/k8s-api/api-manager";
 import apiManagerInjectable from "./dependencies/api-manager.injectable";
 import { KubeObjectMenu } from "./index";
@@ -55,18 +55,18 @@ describe("kube-object-menu", () => {
 
     render = renderFor(di);
 
-    di.override(clusterInjectable, {
+    di.override(clusterInjectable, () => ({
       name: "Some name",
-    } as Cluster);
+    }) as Cluster);
 
-    di.override(apiManagerInjectable, {
+    di.override(apiManagerInjectable, () => ({
       // eslint-disable-next-line unused-imports/no-unused-vars-ts
       getStore: api => undefined,
-    } as ApiManager);
+    }) as ApiManager);
 
-    di.override(hideDetailsInjectable, () => {});
+    di.override(hideDetailsInjectable, () => () => {});
 
-    di.override(editResourceTabInjectable, () => ({
+    di.override(editResourceTabInjectable, () => () => ({
       id: "irrelevant",
       kind: TabKind.TERMINAL,
       pinned: false,
@@ -93,7 +93,7 @@ describe("kube-object-menu", () => {
   });
 
   it("given no cluster, does not crash", () => {
-    di.override(clusterInjectable, null);
+    di.override(clusterInjectable, () => null);
 
     expect(() => {
       render(<KubeObjectMenu object={null} toolbar={true} />);
@@ -110,7 +110,7 @@ describe("kube-object-menu", () => {
 
   describe("given kube object", () => {
     let baseElement: Element;
-    let removeActionMock: AsyncFnMock<Function>;
+    let removeActionMock: AsyncFnMock<() => void>;
 
     beforeEach(async () => {
       const objectStub = KubeObject.create({
